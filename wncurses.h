@@ -1,6 +1,11 @@
 #ifndef __WNCURSES_H
 #define __WNCURSES_H
 
+#define ERR 0
+#define FALSE 0
+#define OK 1
+#define TRUE 1
+
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
 
@@ -41,6 +46,7 @@ extern	int		COLS;
 extern	int		LINES;
 extern  WINDOW  *stdscr;
 
-extern  WINDOW*  initscr    (void);
+extern  WINDOW*	initscr		(void);
+extern	int		endwin		(void);
 
 #endif
