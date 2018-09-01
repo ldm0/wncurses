@@ -5,19 +5,26 @@
 //public functions
 WINDOW*				initscr				(void);
 int					endwin				(void);
+int					refresh				(void);
+int					addch				(chtype input);
+int					waddch				(WINDOW *window, chtype input);
+int					move				(int y,int x);
+int					wmove				(WINDOW *window, int y, int x);
 
-//private functions
+//-------------------private functions
 inline COORD		_coord_create		(short y, short x);
 inline void			_coord_s_init		(COORD_S *coord_s, short y, short x);
 inline void			_swapbuffer_swap	(HANDLE *a, HANDLE *b);
 inline BOOL			_clear_buffer		(HANDLE buffer);
+//set the real cursor position to the position stored in the window
+BOOL				_cursor_sync		(WINDOW *window);			
 
 int LINES;
 int COLS;
 WINDOW *stdscr;
 
 WINDOW *
-initscr(void)
+initscr				(void)
 {
 	CONSOLE_SCREEN_BUFFER_INFO  console_info;
 	stdscr = (WINDOW *)malloc(sizeof(WINDOW));
@@ -33,17 +40,20 @@ initscr(void)
 		console_info.srWindow.Left
 	);
 	_coord_s_init(
-		&(stdscr->_max),
-		console_info.srWindow.Bottom,
-		console_info.srWindow.Right
+		&(stdscr->_cur),
+		0,
+		0
 	);
 	_coord_s_init(
 		&(stdscr->_size),
-		(stdscr->_max._y) - (stdscr->_beg._y) + 1,
-		(stdscr->_max._x) - (stdscr->_beg._x) + 1
+		console_info.srWindow.Bottom - (stdscr->_beg._y) + 1,
+		console_info.srWindow.Right - (stdscr->_beg._x) + 1
 	);
+	
 	LINES				= stdscr->_size._y;
 	COLS				= stdscr->_size._x;
+
+	stdscr->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 
 	stdscr->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
 		GENERIC_READ | GENERIC_WRITE,
@@ -90,7 +100,7 @@ initscr(void)
 }
 
 int 
-endwin			(void)
+endwin				(void)
 {
 	SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
 	if(
@@ -103,9 +113,90 @@ endwin			(void)
 	return OK;
 }
 
+//----refersh line
+//swapbuffer
+//set the current buffer
+//due to the cursor position differs in different buffer after the front buffer was modified when its a backbuffer
+//so we need to move the back cursor position to the back buffer cursor position 
+//and move the front buffer's data to the back buffer
+int
+refresh				(void)
+{
+	_swapbuffer_swap(stdscr->_swapbuffer[SWAPBUFFER_FRONT],stdscr->_swapbuffer[SWAPBUFFER_BACK]);
+
+	//unfinished
+	//I dont know if this is essential, depends on the implementation of the setconsoleActiveScreenBuffer
+	//SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
+
+	if(_cursor_sync(stdscr)==ERR)
+		return ERR;
+
+	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*stdscr->_size._x*stdscr->_size._y);
+	if(_tmp_data==NULL)
+		return ERR;
+
+	DWORD _get_length,_write_length;
+	ReadConsole(stdscr->_swapbuffer[SWAPBUFFER_FRONT], _tmp_data, sizeof(_tmp_data) / sizeof(TCHAR), &_get_length, 0);
+	WriteConsole(stdscr->_swapbuffer[SWAPBUFFER_BACK], _tmp_data, sizeof(_tmp_data) / sizeof(TCHAR), &_write_length, NULL);
+
+	free(_tmp_data);
+
+	return OK;
+}
+
+//unfinished
+int
+addch				(chtype input)
+{
+	return waddch(stdscr,input);
+}
+
+int
+waddch				(WINDOW* window,chtype input)
+{
+	CHAR_INFO _input_ch;
+	_input_ch.Char.AsciiChar=input;
+	_input_ch.Char.UnicodeChar=input;
+	_input_ch.Attributes = window->_cur_color;
+
+	COORD _size= _coord_create(1,1);
+	COORD _begin=_coord_create(window->_cur._y,window->_cur._x);
+	SMALL_RECT _region = { _begin.X,_begin.Y,_begin.X + _size.X,_begin.Y + _size.Y };
+
+	//actually the '\r' and '\n'can be print to the screen but seems like a square
+	if(input=='\r')
+		wmove(window,window->_cur._y,0);
+	else if(input =='\n')
+		wmove(window,(window->_cur._y)+1,0);
+	else{
+		if (!WriteConsoleOutput(window->_swapbuffer[SWAPBUFFER_BACK], &_input_ch, _size, _begin, &_region))
+			return ERR;
+		window->_cur._x = (window->_cur._x + 1) % (window->_size._x);
+		window->_cur._y += (window->_cur._x == 0);
+		if(_cursor_sync(window)==ERR)
+			return ERR;
+	}
+	return OK;
+}
+
+int
+move				(int y, int x)
+{
+	return wmove(stdscr,y,x);
+}
+
+int 
+wmove				(WINDOW *window, int y, int x)
+{
+	window->_cur._y = y;
+	window->_cur._x = x;
+	if(!SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create((short)y, (short)x)))
+		return ERR;
+	return OK;
+}
 
 inline COORD	
-_coord_create	(short y, short x)
+_coord_create		(short y, short x)
 {
 	COORD _tmp;
 	_tmp.Y = y;
@@ -114,7 +205,7 @@ _coord_create	(short y, short x)
 }
 
 inline COORD_S
-_coord_s_create(short y, short x)
+_coord_s_create		(short y, short x)
 {
 	COORD_S _tmp;
 	_tmp._y = y;
@@ -140,7 +231,7 @@ _swapbuffer_swap	(HANDLE *a, HANDLE *b)
 }
 
 inline BOOL
-_clear_buffer(HANDLE buffer)
+_clear_buffer		(HANDLE buffer)
 {
 	CONSOLE_SCREEN_BUFFER_INFO _buffer_info;
 	if (!GetConsoleScreenBufferInfo(buffer, &_buffer_info))
@@ -155,4 +246,10 @@ _clear_buffer(HANDLE buffer)
 	if(!FillConsoleOutputCharacter(buffer,' ',_length,_coord_create(0,0),&_length_written))
 		return FALSE;
 	return TRUE;
+}
+
+BOOL
+_cursor_sync		(WINDOW *window)
+{
+	return SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create(window->_cur._y, window->_cur._x));
 }

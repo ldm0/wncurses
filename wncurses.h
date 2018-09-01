@@ -10,6 +10,7 @@
 #define SWAPBUFFER_BACK		1
 
 typedef int						bool;
+typedef	char					chtype;
 //coord short
 typedef struct	_coord_s_st		COORD_S;
 typedef struct	_window_st		WINDOW;
@@ -21,8 +22,9 @@ struct _coord_s_st{
 
 struct _window_st{
     //beg coord means the upper left corner 
-    //and the _max coord means the lower right corner position
-	COORD_S		_cur, _beg, _max, _size;
+	COORD_S		_cur, _beg, _size;
+
+	WORD		_cur_color;
 
     //the former is the front buffer
 	HANDLE		_swapbuffer[2];
@@ -48,5 +50,10 @@ extern  WINDOW  *stdscr;
 
 extern  WINDOW*	initscr		(void);
 extern	int		endwin		(void);
+extern	int		refresh		(void);
+extern	int		addch		(chtype);
+extern	int		waddch		(WINDOW*,chtype);
+extern	int		move		(int,int);
+extern	int		wmove		(WINDOW*,int,int);
 
 #endif
