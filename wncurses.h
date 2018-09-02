@@ -48,12 +48,16 @@ extern	int		COLS;
 extern	int		LINES;
 extern  WINDOW  *stdscr;
 
-extern  WINDOW*	initscr		(void);
-extern	int		endwin		(void);
-extern	int		refresh		(void);
-extern	int		addch		(chtype);
-extern	int		waddch		(WINDOW*,chtype);
-extern	int		move		(int,int);
-extern	int		wmove		(WINDOW*,int,int);
+extern  WINDOW*	initscr			(void);
+extern	int		endwin			(void);
+extern	int		refresh			(void);
+extern	int		addch			(chtype);
+extern	int		waddch			(WINDOW*,chtype);
+extern	int		mvaddch			(int,int,chtype);
+extern	int		mvwaddch		(WINDOW*,int,int,chtype);
+extern	int		move			(int,int);
+extern	int		wmove			(WINDOW*,int,int);
+extern	int		printw			(const char*,...);
+extern	int		wprintw			(WINDOW *,const char*,...);
 
 #endif

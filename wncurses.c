@@ -8,6 +8,8 @@ int					endwin				(void);
 int					refresh				(void);
 int					addch				(chtype input);
 int					waddch				(WINDOW *window, chtype input);
+int					mvaddch				(int y,int x,chtype input);
+int					mvwaddch			(WINDOW *window,int y,int x,chtype input);
 int					move				(int y,int x);
 int					wmove				(WINDOW *window, int y, int x);
 
@@ -144,7 +146,6 @@ refresh				(void)
 	return OK;
 }
 
-//unfinished
 int
 addch				(chtype input)
 {
@@ -177,6 +178,20 @@ waddch				(WINDOW* window,chtype input)
 			return ERR;
 	}
 	return OK;
+}
+
+//finally I will make it MACRO
+int
+mvaddch				(int y,int x,chtype input)
+{
+	return mvwaddch(stdscr,y,x,input);
+}
+
+int
+mvwaddch			(WINDOW *window,int y,int x,chtype input)
+{
+	wmove(window,y,x);
+	return waddch(window,input);
 }
 
 int
