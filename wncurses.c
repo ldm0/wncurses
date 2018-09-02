@@ -6,12 +6,23 @@
 WINDOW*				initscr				(void);
 int					endwin				(void);
 int					refresh				(void);
+int					wrefresh			(WINDOW *window);
 int					addch				(chtype input);
 int					waddch				(WINDOW *window, chtype input);
 int					mvaddch				(int y,int x,chtype input);
-int					mvwaddch			(WINDOW *window,int y,int x,chtype input);
-int					move				(int y,int x);
+int					mvwaddch			(WINDOW *window, int y,int x,chtype input);
+int					addstr				(const char*);
+int					waddstr				(WINDOW *window,const char*);
+int					mvaddstr			(int y, int x, const char*);
+int					mvwaddstr			(WINDOW *window, int y, int x, const char*);
+int					move				(int y, int x);
 int					wmove				(WINDOW *window, int y, int x);
+//the printw cannot convert directly due to the va_list
+int					printw				(const char *input,...);
+int					mvprintw			(int y,int x,const char *input,...);
+int					wprintw				(WINDOW *window, const char*,...);
+int					mvwprintw			(WINDOW *window, int y,int x,const char *input,...);
+
 
 //-------------------private functions
 inline COORD		_coord_create		(short y, short x);
@@ -115,31 +126,52 @@ endwin				(void)
 	return OK;
 }
 
+int 
+refresh				(void)
+{
+	wrefresh(stdscr);
+}
+
 //----refersh line
 //swapbuffer
 //set the current buffer
 //due to the cursor position differs in different buffer after the front buffer was modified when its a backbuffer
 //so we need to move the back cursor position to the back buffer cursor position 
 //and move the front buffer's data to the back buffer
+
+/*------------------ATTENTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+If there is bug, might be this*/
 int
-refresh				(void)
+wrefresh			(WINDOW *window)
 {
-	_swapbuffer_swap(stdscr->_swapbuffer[SWAPBUFFER_FRONT],stdscr->_swapbuffer[SWAPBUFFER_BACK]);
+	_swapbuffer_swap(window->_swapbuffer[SWAPBUFFER_FRONT],window->_swapbuffer[SWAPBUFFER_BACK]);
 
 	//unfinished
 	//I dont know if this is essential, depends on the implementation of the setconsoleActiveScreenBuffer
-	//SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
+	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
 
-	if(_cursor_sync(stdscr)==ERR)
+	if(_cursor_sync(window)==ERR)
 		return ERR;
 
-	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*stdscr->_size._x*stdscr->_size._y);
+	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*window->_size._x*window->_size._y);
 	if(_tmp_data==NULL)
 		return ERR;
 
-	DWORD _get_length,_write_length;
-	ReadConsole(stdscr->_swapbuffer[SWAPBUFFER_FRONT], _tmp_data, sizeof(_tmp_data) / sizeof(TCHAR), &_get_length, 0);
-	WriteConsole(stdscr->_swapbuffer[SWAPBUFFER_BACK], _tmp_data, sizeof(_tmp_data) / sizeof(TCHAR), &_write_length, NULL);
+	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x),(window->_beg._y) + (window->_size._y) };
+	ReadConsoleOutput(
+		window->_swapbuffer[SWAPBUFFER_FRONT], 
+		_tmp_data, 
+		_coord_create(window->_size._y,window->_size._x),
+		_coord_create(0,0),
+		&_reg
+	);
+	WriteConsoleOutput(
+		window->_swapbuffer[SWAPBUFFER_BACK], 
+		_tmp_data, 
+		_coord_create(window->_size._y,window->_size._x),
+		_coord_create(0,0),
+		&_reg
+	);
 
 	free(_tmp_data);
 
@@ -152,6 +184,7 @@ addch				(chtype input)
 	return waddch(stdscr,input);
 }
 
+/*
 int
 waddch				(WINDOW* window,chtype input)
 {
@@ -179,6 +212,15 @@ waddch				(WINDOW* window,chtype input)
 	}
 	return OK;
 }
+*/
+int
+waddch				(WINDOW *window,chtype input)
+{
+	DWORD _written_length;
+	if(!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK],&input,1,&_written_length,NULL))
+		return ERR;
+	return OK;
+}
 
 //finally I will make it MACRO
 int
@@ -192,6 +234,36 @@ mvwaddch			(WINDOW *window,int y,int x,chtype input)
 {
 	wmove(window,y,x);
 	return waddch(window,input);
+}
+
+int
+addstr				(const char *input)
+{
+	return waddstr(stdscr,input);
+}
+
+//unfinished
+int
+waddstr				(WINDOW *window, const char *input)
+{
+	DWORD _written_length;
+	if(!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK],input,1,&_written_length,NULL))
+		return ERR;
+	return OK;
+}
+
+int
+mvaddstr			(int y,int x,const char *input)
+{
+	return mvwaddstr(stdscr, y, x, input);
+}
+
+int
+mvwaddstr			(WINDOW *window,int y,int x,const char *input)
+{
+	if(move(y,x)==ERR)
+		return ERR;
+	return waddstr(window,input);
 }
 
 int
@@ -210,6 +282,10 @@ wmove				(WINDOW *window, int y, int x)
 	return OK;
 }
 
+
+
+
+//-------------------private
 inline COORD	
 _coord_create		(short y, short x)
 {

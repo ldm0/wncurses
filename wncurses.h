@@ -51,13 +51,20 @@ extern  WINDOW  *stdscr;
 extern  WINDOW*	initscr			(void);
 extern	int		endwin			(void);
 extern	int		refresh			(void);
+extern	int		wrefresh		(WINDOW*);
 extern	int		addch			(chtype);
 extern	int		waddch			(WINDOW*,chtype);
 extern	int		mvaddch			(int,int,chtype);
 extern	int		mvwaddch		(WINDOW*,int,int,chtype);
+extern	int		addstr			(const char*);
+extern	int		waddstr			(WINDOW*,const char*);
+extern	int		mvaddstr		(int y,int x,const char*);
+extern	int		mvwaddstr		(WINDOW*,int y,int x,const char*);
 extern	int		move			(int,int);
 extern	int		wmove			(WINDOW*,int,int);
 extern	int		printw			(const char*,...);
+extern	int		mvprintw		(int,int,const char*,...);
 extern	int		wprintw			(WINDOW *,const char*,...);
+extern	int		mvwprintw		(int,int,WINDOW *,const char*,...);
 
 #endif
