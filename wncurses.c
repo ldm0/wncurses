@@ -12,11 +12,23 @@ int					waddch				(WINDOW *window, chtype input);
 int					mvaddch				(int y,int x,chtype input);
 int					mvwaddch			(WINDOW *window, int y,int x,chtype input);
 int					addstr				(const char*);
+int					addnstr				(const char*, int n);
 int					waddstr				(WINDOW *window,const char*);
+int					waddnstr			(WINDOW *window,const char*,int n);
 int					mvaddstr			(int y, int x, const char*);
+int					mvaddnstr			(int y, int x, const char*,int n);
 int					mvwaddstr			(WINDOW *window, int y, int x, const char*);
+int					mvwaddnstr			(WINDOW *window, int y, int x, const char*,int n);
 int					move				(int y, int x);
 int					wmove				(WINDOW *window, int y, int x);
+int					addchstr			(const chtype *chstr);
+int					addchnstr			(const chtype *chstr, int n);
+int					waddchstr			(WINDOW *window, const chtype *chstr);
+int					waddchnstr			(WINDOW *window, const chtype *chstr, int n);
+int					mvaddchstr			(int y, int x, const chtype *chstr);
+int					mvaddchnstr			(int y, int x, const chtype *chstr, int n);
+int					mvwaddchstr			(WINDOW *window, int y, int x, const chtype *chstr);
+int					mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n);
 //the printw cannot convert directly due to the va_list
 int					printw				(const char *input,...);
 int					mvprintw			(int y,int x,const char *input,...);
@@ -139,8 +151,8 @@ refresh				(void)
 //so we need to move the back cursor position to the back buffer cursor position 
 //and move the front buffer's data to the back buffer
 
-/*------------------ATTENTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-If there is bug, might be this*/
+/*------------------ATTENTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  If there is bug, might be this*/
+
 int
 wrefresh			(WINDOW *window)
 {
@@ -242,12 +254,24 @@ addstr				(const char *input)
 	return waddstr(stdscr,input);
 }
 
-//unfinished
+int
+addnstr				(const char *input,int n)
+{
+	return waddnstr(stdscr,input,n);
+}
+
 int
 waddstr				(WINDOW *window, const char *input)
 {
+	return waddnstr(window, input, -1);
+}
+
+int
+waddnstr			(WINDOW *window,const char *input,int n)
+{
+	size_t _strlen_chstr = strlen(input);
 	DWORD _written_length;
-	if(!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK],input,1,&_written_length,NULL))
+	if (!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK],input, ((n == -1) || (n > _strlen_chstr)) ? _strlen_chstr : n, &_written_length, NULL))
 		return ERR;
 	return OK;
 }
@@ -259,11 +283,23 @@ mvaddstr			(int y,int x,const char *input)
 }
 
 int
+mvaddnstr			(int y,int x,const char *input,int n)
+{
+	return mvwaddnstr(stdscr, y, x, input, n);
+}
+
+int
 mvwaddstr			(WINDOW *window,int y,int x,const char *input)
 {
-	if(move(y,x)==ERR)
+	return mvwaddnstr(window, y, x, input, -1);
+}
+
+int
+mvwaddnstr			(WINDOW *window, int y, int x, const char *input, int n)
+{
+	if(wmove(window,y,x)==ERR)
 		return ERR;
-	return waddstr(window,input);
+	return waddnstr(window, input, n);
 }
 
 int
@@ -282,7 +318,60 @@ wmove				(WINDOW *window, int y, int x)
 	return OK;
 }
 
+int					
+addchstr			(const chtype *chstr)
+{
+	return waddchstr(stdscr, chstr);
+}
 
+int
+addchnstr			(const chtype *chstr, int n)
+{
+	return waddchnstr(stdscr, chstr, n);
+}
+
+int					
+waddchstr			(WINDOW *window, const chtype *chstr)
+{
+	return waddchnstr(window, chstr,-1);
+}
+
+//-------------------------ATTENTION!----------if the chtype is unicode the strlen should change toe the wstrlen
+int					
+waddchnstr			(WINDOW *window, const chtype *chstr, int n)
+{
+	size_t _strlen_chstr = strlen(chstr);
+	DWORD _length_written;
+	if (!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK], chstr, ((n == -1) || (n > _strlen_chstr)) ? _strlen_chstr : n, &_length_written, NULL))
+		return ERR;
+	return OK;
+}
+
+int
+mvaddchstr			(int y, int x, const chtype *chstr)
+{
+	return mvwaddchstr(stdscr, y, x, chstr);
+}
+
+int
+mvaddchnstr			(int y, int x, const chtype *chstr, int n)
+{
+	return mvwaddchnstr(stdscr, y, x, chstr, n);
+}
+
+int
+mvwaddchstr			(WINDOW *window, int y, int x, const chtype *chstr)
+{
+	return mvwaddchnstr(window, y, x, chstr, -1);
+}
+
+int
+mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n)
+{
+	if (wmove(window, y, x) == ERR)
+		return ERR;
+	return waddchnstr(window,chstr,n);
+}
 
 
 //-------------------private
