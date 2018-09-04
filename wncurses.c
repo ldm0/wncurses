@@ -2,7 +2,7 @@
 //#include <stdio.h>
 #include "wncurses.h"
 
-//public functions
+//----------------public functions
 WINDOW*				initscr				(void);
 int					endwin				(void);
 int					refresh				(void);
