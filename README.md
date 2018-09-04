@@ -2,7 +2,7 @@
 ![progress](http://progressed.io/bar/10?title=progress)
 ![build](https://img.shields.io/badge/build-passed-brightgreen.svg)
 
-NCURSES in console of windows.
+NCURSES in console of MS Windows.
 
 Recently found that the ncurses is really convient for building beautiful programs in the form of command line.
 
