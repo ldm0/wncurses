@@ -1,8 +1,8 @@
-int addch (const chtype);			/* generated */
-int addchnstr (const chtype *, int);		/* generated */
-int addchstr (const chtype *);			/* generated */
-int addnstr (const char *, int);			/* generated */
-int addstr (const char *);			/* generated */
+int addch (const chtype);		            //implemented
+int addchnstr (const chtype *, int);		//implemented
+int addchstr (const chtype *);			//implemented
+int addnstr (const char *, int);			//implemented
+int addstr (const char *);			//implemented
 int attroff (NCURSES_ATTR_T);			/* generated */
 int attron (NCURSES_ATTR_T);			/* generated */
 int attrset (NCURSES_ATTR_T);			/* generated */
@@ -10,9 +10,9 @@ int attr_get (attr_t *, NCURSES_PAIRS_T *, void *);	/* generated */
 int attr_off (attr_t, void *);			/* generated */
 int attr_on (attr_t, void *);			/* generated */
 int attr_set (attr_t, NCURSES_PAIRS_T, void *);		/* generated */
-int baudrate (void);				/* implemented */
-int beep  (void);				/* implemented */
-int bkgd (chtype);				/* generated */
+int baudrate (void);				//implemented
+int beep  (void);				//implemented
+int bkgd (chtype);				//implemented
 void bkgdset (chtype);				/* generated */
 int border (chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);	/* generated */
 int box (WINDOW *, chtype, chtype);		/* generated */

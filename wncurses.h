@@ -78,5 +78,11 @@ extern	int		printw			(const char*,...);
 extern	int		mvprintw		(int,int,const char*,...);
 extern	int		wprintw			(WINDOW *,const char*,...);
 extern	int		mvwprintw		(int,int,WINDOW *,const char*,...);
+extern	int		baudrate		(void);
+extern	int		beep			(void);
+extern	int		bkgd			(chtype);
+extern	int		border			(chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
+extern	int		wborder			(WINDOW*,chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
+extern	int		box				(WINDOW*,chtype, chtype);
 
 #endif

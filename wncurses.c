@@ -29,6 +29,12 @@ int					mvaddchstr			(int y, int x, const chtype *chstr);
 int					mvaddchnstr			(int y, int x, const chtype *chstr, int n);
 int					mvwaddchstr			(WINDOW *window, int y, int x, const chtype *chstr);
 int					mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n);
+int					baudrate			(void);
+int					beep				(void);
+int					bkgd				(chtype input);
+int					border				(chtype ls,chtype rs,chtype ts,chtype bs,chtype tl,chtype tr,chtype bl,chtype br);
+int					wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
+int					box					(WINDOW *window, chtype verch, chtype horch);
 //the printw cannot convert directly due to the va_list
 int					printw				(const char *input,...);
 int					mvprintw			(int y,int x,const char *input,...);
@@ -371,6 +377,56 @@ mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n)
 	if (wmove(window, y, x) == ERR)
 		return ERR;
 	return waddchnstr(window,chstr,n);
+}
+
+int
+baudrate			(void)
+{
+	//It seems that there is no baud rate in windows terminal? I am uncertain.
+	return -1;
+}
+
+int 
+beep				(void)
+{
+	/*In Windows 7, 
+	Beep was rewritten to pass the beep to the default sound device for the session. 
+	This is normally the sound card, except when run under Terminal Services, 
+	in which case the beep is rendered on the client.*/
+	if(!Beep(750, 300))
+		return ERR;
+	return OK;
+}
+
+int
+bkgd				(chtype input)
+{
+	//because the abnormal output of the test program ,
+	//I decided to build from my own imagination;
+	//I dont know if this function change the back buffer or the front buffer firectly
+	DWORD _written_length;
+	if(!FillConsoleOutputCharacter(stdscr->_swapbuffer[SWAPBUFFER_BACK],input,1,_coord_create(0,0),&_written_length))
+		return ERR;
+	return OK;
+}
+
+int
+border				(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
+{
+	return wborder(stdscr, ls, rs, ts, bs, tl, tr, bl, br);
+}
+
+//unfinished
+int
+wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
+{
+	
+}
+
+int
+box					(WINDOW *window,chtype verch,chtype horch)
+{
+	
 }
 
 
