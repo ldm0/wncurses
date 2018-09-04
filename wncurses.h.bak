@@ -1,21 +1,3 @@
-#ifndef __WNCURSES__
-#define __WNCURSES__
-
-//for different bits version programs
-#if 0 && defined(_LP64)
-typedef unsigned chtype;
-typedef unsigned mmask_t;
-#else
-typedef unsigned long chtype;
-typedef unsigned long mmask_t;
-#endif
-
-struct _win_st{
-};
-
-typedef struct _win_st WINDOW;
-typedef int bool;
-
 int addch (const chtype);			/* generated */
 int addchnstr (const chtype *, int);		/* generated */
 int addchstr (const chtype *);			/* generated */
@@ -281,27 +263,14 @@ void wsyncup (WINDOW *);				/* implemented */
 void wtimeout (WINDOW *,int);			/* implemented */
 int wtouchln (WINDOW *,int,int,int);		/* implemented */
 int wvline (WINDOW *,chtype,int);		/* implemented */
-
-/*
- * These are also declared in <term.h>:
- */
 int tigetflag (const char *);		/* implemented */
 int tigetnum (const char *);		/* implemented */
 char* tigetstr (const char *);		/* implemented */
 int putp (const char *);				/* implemented */
-
-#if NCURSES_TPARM_VARARGS
 char* tparm (const char *, ...);	/* special */
-#else
 char* tparm (const char *, NCURSES_TPARM_ARG,NCURSES_TPARM_ARG,NCURSES_TPARM_ARG,NCURSES_TPARM_ARG,NCURSES_TPARM_ARG,NCURSES_TPARM_ARG,NCURSES_TPARM_ARG,NCURSES_TPARM_ARG,NCURSES_TPARM_ARG);	/* special */
 char* tparm_varargs (const char *, ...);	/* special */
-#endif
-
 char* tiparm (const char *, ...);		/* special */
-
-/*
- * These functions are not in X/Open, but we use them in macro definitions:
- */
 int getattrs (const WINDOW *);			/* generated */
 int getcurx (const WINDOW *);			/* generated */
 int getcury (const WINDOW *);			/* generated */
@@ -311,20 +280,6 @@ int getmaxx (const WINDOW *);			/* generated */
 int getmaxy (const WINDOW *);			/* generated */
 int getparx (const WINDOW *);			/* generated */
 int getpary (const WINDOW *);			/* generated */
-
-/*
- * vid_attr() was implemented originally based on a draft of X/Open curses.
- */
-#if !NCURSES_WIDECHAR
-#define vid_attr(a,pair,opts) vidattr(a)
-#endif
-
-/*
- * These functions are extensions - not in X/Open Curses.
- */
-#if 1
-#undef  NCURSES_EXT_FUNCS
-#define NCURSES_EXT_FUNCS 20161126
 typedef int (*NCURSES_WINDOW_CB)(WINDOW *, void *);
 typedef int (*NCURSES_SCREEN_CB)(SCREEN *, void *);
 bool is_term_resized (int, int);
@@ -346,11 +301,6 @@ int use_screen (SCREEN *, NCURSES_SCREEN_CB, void *);
 int use_window (WINDOW *, NCURSES_WINDOW_CB, void *);
 int wresize (WINDOW *, int, int);
 void nofilter(void);
-
-/*
- * These extensions provide access to information stored in the WINDOW even
- * when NCURSES_OPAQUE is set:
- */
 WINDOW* wgetparent (const WINDOW *);	/* generated */
 bool is_cleared (const WINDOW *);	/* generated */
 bool is_idcok (const WINDOW *);		/* generated */
@@ -366,5 +316,3 @@ bool is_subwin (const WINDOW *);		/* generated */
 bool is_syncok (const WINDOW *);		/* generated */
 int wgetdelay (const WINDOW *);		/* generated */
 int wgetscrreg (const WINDOW *, int *, int *); /* generated */
-
-#endif
