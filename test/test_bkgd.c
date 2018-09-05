@@ -2,15 +2,24 @@
 
 int main()
 {
-	initscr();
-	printw("lkasdjflkjahsdkljfnoijashdfasdkjf\nalsidjflkasdfkljaksdlfkjn\\nalskdjflkajsd");
-	refresh();
+        initscr();
+        printw("lkasdjflkjahsdkljfnoijashdfasdkjf\nalsidjflkasdfkljaksdlfkjn\\nalskdjflkajsd");
+        refresh();
+        getch();
+        bkgd('h');
+        //if it set the bkgd instantly?
+        //yes
+        getch();
+        refresh();
+        getch();
+	//if the h in the string printw was changed to the e?
+	//ans yes
+	bkgd('e');
+        getch();
+	//if the bkgd have the refresh effect?
+	//ans shit yes
+	printw("iiiiiiiiiiiiiii");
+	bkgd('k');
 	getch();
-	bkgd('h');
-	//if it set the bkgd instantly?
-	//yes
-	getch();
-	refresh();
-	getch();
-	endwin();
+        endwin();
 }

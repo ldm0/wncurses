@@ -84,6 +84,8 @@ initscr				(void)
 	LINES				= stdscr->_size._y;
 	COLS				= stdscr->_size._x;
 
+	stdscr->_bkgd_ch = ' ';
+
 	stdscr->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 
 	stdscr->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
@@ -401,9 +403,35 @@ beep				(void)
 int
 bkgd				(chtype input)
 {
-	//because the abnormal output of the test program ,
-	//I decided to build from my own imagination;
-	//I dont know if this function change the back buffer or the front buffer firectly
+	return wbkgd(stdscr,input);
+}
+
+//unfinished
+//unfinished
+int
+wbkgd				(WINDOW *window, chtype input)
+{
+	//from the test in my raspberry pi 
+	//found serveral interesting things
+	//Firstly,the bkgd function instantly, which means that the function modifies the front buffer, 
+	//and more interestingly this function have the effet of refresh , if we print something before the bkgd function but don't refresh, 
+	//the things printed will be presented, which can be tested in the test_bkgd file
+	//Secondly, this function was implemented interestingly. There is a background char in the WINDOW struct.
+	//This function scan the whole screen and change the every char same as the _bkgd_ch to the input.
+
+	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*window->_size._x*window->_size._y);
+	if(_tmp_data==NULL)
+		return ERR;
+
+	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x),(window->_beg._y) + (window->_size._y) };
+	ReadConsoleOutput(
+		window->_swapbuffer[SWAPBUFFER_FRONT], 
+		_tmp_data, 
+		_coord_create(window->_size._y,window->_size._x),
+		_coord_create(0,0),
+		&_reg
+	);
+
 	DWORD _written_length;
 	if(!FillConsoleOutputCharacter(stdscr->_swapbuffer[SWAPBUFFER_BACK],input,1,_coord_create(0,0),&_written_length))
 		return ERR;
@@ -417,6 +445,16 @@ border				(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, cht
 }
 
 //unfinished
+/*
+ls - left side,
+rs - right side,
+ts - top side,
+bs - bottom side,
+tl - top left-hand corner,
+tr - top right-hand corner,
+bl - bottom left-hand corner, and
+br - bottom right-hand corner.
+*/
 int
 wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
@@ -426,7 +464,7 @@ wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype t
 int
 box					(WINDOW *window,chtype verch,chtype horch)
 {
-	
+	return wborder(window, verch, verch, horch, horch, 0, 0, 0, 0);
 }
 
 

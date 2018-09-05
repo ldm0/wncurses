@@ -17,7 +17,8 @@ typedef struct	_window_st		WINDOW;
 
 struct _coord_s_st{
 	//the underscore means the val is private(cannot be accessed by outside world)
-	short _y, _x;
+	short _x;
+	short _y;
 };
 
 struct _window_st{
@@ -28,6 +29,8 @@ struct _window_st{
 
     //the former is the front buffer
 	HANDLE		_swapbuffer[2];
+
+	chtype		_bkgd_ch;
 
     /* option values set by user */
     struct window_state{
