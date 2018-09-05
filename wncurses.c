@@ -35,6 +35,7 @@ int					bkgd				(chtype input);
 int					border				(chtype ls,chtype rs,chtype ts,chtype bs,chtype tl,chtype tr,chtype bl,chtype br);
 int					wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
 int					box					(WINDOW *window, chtype verch, chtype horch);
+int					flash				(void);
 //the printw cannot convert directly due to the va_list
 int					printw				(const char *input,...);
 int					mvprintw			(int y,int x,const char *input,...);
@@ -46,7 +47,7 @@ int					mvwprintw			(WINDOW *window, int y,int x,const char *input,...);
 inline COORD		_coord_create		(short y, short x);
 inline void			_coord_s_init		(COORD_S *coord_s, short y, short x);
 inline void			_swapbuffer_swap	(HANDLE *a, HANDLE *b);
-inline BOOL			_clear_buffer		(HANDLE buffer);
+inline BOOL			_clear_buffer		(HANDLE buffer,chtype input);
 //set the real cursor position to the position stored in the window
 BOOL				_cursor_sync		(WINDOW *window);			
 
@@ -123,8 +124,8 @@ initscr				(void)
 			)
 		)
 		exit(1);
-	_clear_buffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
-	_clear_buffer(stdscr->_swapbuffer[SWAPBUFFER_BACK]);
+	_clear_buffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT], ' ');
+	_clear_buffer(stdscr->_swapbuffer[SWAPBUFFER_BACK], ' ');
 
 	if(!SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]))
 		exit(1);
@@ -504,6 +505,26 @@ box					(WINDOW *window,chtype verch,chtype horch)
 	return wborder(window, verch, verch, horch, horch, 0, 0, 0, 0);
 }
 
+int
+flash				(void)
+{
+	HANDLE _white_console_buffer = CreateConsoleScreenBuffer(
+		GENERIC_READ | GENERIC_WRITE,
+		//I dont what the console share mode means, so set it to 0 to see if something wrong happens
+		0,
+		NULL,
+		CONSOLE_TEXTMODE_BUFFER,
+		NULL
+	);
+	if(!SetConsoleScreenBufferSize(_white_console_buffer,_coord_create(stdscr->_size._y,stdscr->_size._x)))
+		return ERR;
+	_clear_buffer(_white_console_buffer,'B');
+	SetConsoleActiveScreenBuffer(_white_console_buffer);
+	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
+	CloseHandle(_white_console_buffer);
+	return OK;
+}
+
 
 //-------------------private
 inline COORD	
@@ -542,7 +563,7 @@ _swapbuffer_swap	(HANDLE *a, HANDLE *b)
 }
 
 inline BOOL
-_clear_buffer		(HANDLE buffer)
+_clear_buffer		(HANDLE buffer,chtype input)
 {
 	CONSOLE_SCREEN_BUFFER_INFO _buffer_info;
 	if (!GetConsoleScreenBufferInfo(buffer, &_buffer_info))
@@ -554,7 +575,7 @@ _clear_buffer		(HANDLE buffer)
 	);
 	//unused
 	DWORD _length_written;
-	if(!FillConsoleOutputCharacter(buffer,' ',_length,_coord_create(0,0),&_length_written))
+	if(!FillConsoleOutputCharacter(buffer,input,_length,_coord_create(0,0),&_length_written))
 		return FALSE;
 	return TRUE;
 }

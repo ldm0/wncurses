@@ -87,5 +87,6 @@ extern	int		bkgd			(chtype);
 extern	int		border			(chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
 extern	int		wborder			(WINDOW*,chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
 extern	int		box				(WINDOW*,chtype, chtype);
+extern	int		flash			(void);
 
 #endif
