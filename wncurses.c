@@ -350,6 +350,9 @@ waddchnstr			(WINDOW *window, const chtype *chstr, int n)
 {
 	size_t _strlen_chstr = strlen(chstr);
 	DWORD _length_written;
+	//The reason why I don't use the WriteConsoleInput() function is 
+	//it's behavior when the string exceeds the row is different from the what we want.
+	//It will cast a lot more time to fix it.
 	if (!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK], chstr, ((n == -1) || (n > _strlen_chstr)) ? _strlen_chstr : n, &_length_written, NULL))
 		return ERR;
 	return OK;
@@ -406,8 +409,6 @@ bkgd				(chtype input)
 	return wbkgd(stdscr,input);
 }
 
-//unfinished
-//unfinished
 int
 wbkgd				(WINDOW *window, chtype input)
 {
@@ -419,22 +420,39 @@ wbkgd				(WINDOW *window, chtype input)
 	//Secondly, this function was implemented interestingly. There is a background char in the WINDOW struct.
 	//This function scan the whole screen and change the every char same as the _bkgd_ch to the input.
 
-	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*window->_size._x*window->_size._y);
+	int _tmp_data_length = window->_size._x*window->_size._y;
+	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*_tmp_data_length);
 	if(_tmp_data==NULL)
 		return ERR;
 
+	//get chars
 	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x),(window->_beg._y) + (window->_size._y) };
 	ReadConsoleOutput(
-		window->_swapbuffer[SWAPBUFFER_FRONT], 
+		window->_swapbuffer[SWAPBUFFER_BACK], 
 		_tmp_data, 
 		_coord_create(window->_size._y,window->_size._x),
 		_coord_create(0,0),
 		&_reg
 	);
 
-	DWORD _written_length;
-	if(!FillConsoleOutputCharacter(stdscr->_swapbuffer[SWAPBUFFER_BACK],input,1,_coord_create(0,0),&_written_length))
-		return ERR;
+	//change chars
+	for(int i=0;i<_tmp_data_length;++i)
+		if(_tmp_data[i]==window->_bkgd_ch)
+			_tmp_data[i]=input;
+
+	//write chars
+	WriteConsoleOutput(
+		window->_swapbuffer[SWAPBUFFER_BACK], 
+		_tmp_data, 
+		_coord_create(window->_size._y,window->_size._x),
+		_coord_create(0,0),
+		&_reg
+	);
+
+	window->_bkgd_ch = input;
+
+	wrefresh(window);
+
 	return OK;
 }
 
@@ -444,7 +462,6 @@ border				(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, cht
 	return wborder(stdscr, ls, rs, ts, bs, tl, tr, bl, br);
 }
 
-//unfinished
 /*
 ls - left side,
 rs - right side,
@@ -458,7 +475,27 @@ br - bottom right-hand corner.
 int
 wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
-	
+	COORD_S _tmp_cur_pos = window->_cur;
+	//top line
+	wmove(window, 0, 0);
+	waddch(window, tl);
+	for (int x = 1; x < window->_size._x - 1; ++x)
+		waddch(window, ts);
+	waddch(window, tr);
+
+	//bottom line
+	wmove(window, window->_size._y - 1, 0);
+	waddch(window, bl);
+	for (int x = 1; x < window->_size._x - 1; ++x)
+		waddch(window, bs);
+	waddch(window, br);
+
+	//both sides
+	for (int y = 1; y < window->_size._y - 1; ++y){
+		mvwaddch(window, y, 0, ls);
+		mvwaddch(window, y, window->_size._x - 1, rs);
+	}
+	return OK;
 }
 
 int
