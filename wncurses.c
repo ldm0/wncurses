@@ -610,6 +610,29 @@ mvwvline			(WINDOW *window, int y, int x, chtype ch, int n)
 	return wvline(window, ch, n);
 }
 
+int
+curs_set			(int input)
+{
+	//not every window has a state, so I dont place the state in the WINDOW struct
+	//I let the windows to store the cursor state
+	CONSOLE_CURSOR_INFO _tmp_cur_info;
+	if(!GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &_tmp_cur_info))
+		return ERR;
+	if (input == 0)
+		_tmp_cur_info.bVisible = FALSE;
+	if (input == 1){
+		_tmp_cur_info.bVisible = TRUE;
+		_tmp_cur_info.dwSize = 1;
+	}
+	if (input == 2){
+		_tmp_cur_info.bVisible = TRUE;
+		_tmp_cur_info.dwSize = 100;
+	}
+	if(!SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &_tmp_cur_info))
+		return ERR;
+	return OK;
+}
+
 
 //-------------------private
 inline COORD	
