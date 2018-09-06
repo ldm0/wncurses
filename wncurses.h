@@ -9,6 +9,9 @@
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
 
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#define MIN(a,b) ((a)<(b)?(a):(b))
+
 typedef int						bool;
 typedef	char					chtype;
 //coord short
@@ -85,8 +88,18 @@ extern	int		baudrate		(void);
 extern	int		beep			(void);
 extern	int		bkgd			(chtype);
 extern	int		border			(chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
-extern	int		wborder			(WINDOW*,chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
-extern	int		box				(WINDOW*,chtype, chtype);
+extern	int		wborder			(WINDOW *,chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
+extern	int		box				(WINDOW *,chtype, chtype);
 extern	int		flash			(void);
+extern	int		can_change_color(void);
+extern	int		hline			(chtype, int);
+extern	int		vline			(chtype, int);
+extern	int		whline			(WINDOW *, chtype, int);
+extern	int		wvline			(WINDOW *, chtype, int);
+extern	int		mvhline			(int, int, chtype, int);
+extern	int		mvvline			(int, int, chtype, int);
+extern	int		mvwhline		(WINDOW *,int, int, chtype, int);
+extern	int		mvwvline		(WINDOW *,int, int, chtype, int);
+extern	int		curs_set		(int);
 
 #endif

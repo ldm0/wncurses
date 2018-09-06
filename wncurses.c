@@ -29,6 +29,11 @@ int					mvaddchstr			(int y, int x, const chtype *chstr);
 int					mvaddchnstr			(int y, int x, const chtype *chstr, int n);
 int					mvwaddchstr			(WINDOW *window, int y, int x, const chtype *chstr);
 int					mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n);
+//the printw cannot convert directly due to the va_list
+int					printw				(const char *input,...);
+int					mvprintw			(int y,int x,const char *input,...);
+int					wprintw				(WINDOW *window, const char*,...);
+int					mvwprintw			(WINDOW *window, int y,int x,const char *input,...);
 int					baudrate			(void);
 int					beep				(void);
 int					bkgd				(chtype input);
@@ -36,11 +41,16 @@ int					border				(chtype ls,chtype rs,chtype ts,chtype bs,chtype tl,chtype tr,c
 int					wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
 int					box					(WINDOW *window, chtype verch, chtype horch);
 int					flash				(void);
-//the printw cannot convert directly due to the va_list
-int					printw				(const char *input,...);
-int					mvprintw			(int y,int x,const char *input,...);
-int					wprintw				(WINDOW *window, const char*,...);
-int					mvwprintw			(WINDOW *window, int y,int x,const char *input,...);
+int					can_change_color	(void);
+int					hline				(chtype ch, int n);
+int					vline				(chtype ch, int n);
+int					whline				(WINDOW*,chtype ch, int n);
+int					wvline				(WINDOW*,chtype ch, int n);
+int					mvhline				(int y, int x, chtype ch, int n);
+int					mvvline				(int y, int x, chtype ch, int n);
+int					mvwhline			(WINDOW*, int y, int x, chtype ch, int n);
+int					mvwvline			(WINDOW*, int y, int x, chtype ch, int n);
+int					curs_set			(int n);
 
 
 //-------------------private functions
@@ -463,6 +473,7 @@ border				(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, cht
 	return wborder(stdscr, ls, rs, ts, bs, tl, tr, bl, br);
 }
 
+//the init val havent been set
 /*
 ls - left side,
 rs - right side,
@@ -496,11 +507,12 @@ wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype t
 		mvwaddch(window, y, 0, ls);
 		mvwaddch(window, y, window->_size._x - 1, rs);
 	}
+
+	wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
 	return OK;
 }
 
-int
-box					(WINDOW *window,chtype verch,chtype horch)
+int box					(WINDOW *window,chtype verch,chtype horch)
 {
 	return wborder(window, verch, verch, horch, horch, 0, 0, 0, 0);
 }
@@ -523,6 +535,79 @@ flash				(void)
 	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
 	CloseHandle(_white_console_buffer);
 	return OK;
+}
+
+int
+can_change_color	(void)
+{
+	//can definitely change color definition
+	return OK;
+}
+
+int
+hline				(chtype ch, int n)
+{
+	return whline(stdscr,ch,n);
+}
+
+int
+mvhline				(int y, int x, chtype ch, int n)
+{
+	if (move(y, x) == ERR)
+		return ERR;
+	return hline(ch, n);
+}
+
+int
+whline				(WINDOW *window, chtype ch, int n)
+{
+	COORD_S _tmp_cur_pos = window->_cur;
+	int _length = MIN(n, (window->_size._x) - (window->_cur._x) + 1);
+	for (int i = 0; i < _length; ++i)
+		if(waddch(window,ch) == ERR)
+			return ERR;
+	wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
+	return OK;
+}
+
+int
+mvwhline			(WINDOW *window, int y, int x, chtype ch, int n)
+{
+	if (wmove(window, y, x) == ERR)
+		return ERR;
+	return whline(window,ch,n);
+}
+
+int
+vline				(chtype ch, int n)
+{
+	return wvline(stdscr, ch, n);
+}
+
+int
+mvvline				(int y, int x, chtype ch, int n)
+{
+	if (move(y, x) == ERR)
+		return ERR;
+	return vline(ch, n);
+}
+
+int
+wvline				(WINDOW *window, chtype ch, int n)
+{
+	COORD_S _tmp_cur_pos = window->_cur;
+	for (int i = _tmp_cur_pos._y; i < window->_size._y; ++i)
+		mvwaddch(window, i, _tmp_cur_pos._x, ch);
+	wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
+	return OK;
+}
+
+int 
+mvwvline			(WINDOW *window, int y, int x, chtype ch, int n)
+{
+	if (wmove(window, y, x) == ERR)
+		return ERR;
+	return wvline(window, ch, n);
 }
 
 
