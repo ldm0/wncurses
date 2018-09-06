@@ -51,6 +51,14 @@ int					mvvline				(int y, int x, chtype ch, int n);
 int					mvwhline			(WINDOW*, int y, int x, chtype ch, int n);
 int					mvwvline			(WINDOW*, int y, int x, chtype ch, int n);
 int					curs_set			(int n);
+int					clear				(void);
+int					wclear				(WINDOW *window);
+int					erase				(void);
+int					werase				(WINDOW *window);
+int					clrtobot			(void);
+int					clrtoeol			(void);
+int					wclrtobot			(WINDOW *);
+int					wclrtoeol			(WINDOW *);
 
 
 //-------------------private functions
@@ -466,7 +474,7 @@ wbkgd				(WINDOW *window, chtype input)
 
 	return OK;
 }
-
+extern	
 int
 border				(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
@@ -512,7 +520,8 @@ wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype t
 	return OK;
 }
 
-int box					(WINDOW *window,chtype verch,chtype horch)
+int 
+box					(WINDOW *window,chtype verch,chtype horch)
 {
 	return wborder(window, verch, verch, horch, horch, 0, 0, 0, 0);
 }
@@ -566,8 +575,7 @@ whline				(WINDOW *window, chtype ch, int n)
 	for (int i = 0; i < _length; ++i)
 		if(waddch(window,ch) == ERR)
 			return ERR;
-	wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
-	return OK;
+	return wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
 }
 
 int
@@ -633,6 +641,82 @@ curs_set			(int input)
 	return OK;
 }
 
+int
+clear				(void)
+{
+	return wclear(stdscr);
+}
+
+int
+wclear				(WINDOW *window)
+{
+	_clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], ' ');
+	return wrefresh(window);
+}
+
+int
+erase				(void)
+{
+	return werase(stdscr);
+}
+
+int
+werase				(WINDOW *window)
+{
+	return wclear(window);
+}
+
+int
+clrtobot			(void)
+{
+	return wclrtobot(stdscr);
+}
+
+int
+clrtoeol			(void)
+{
+	return wclrtoeol(stdscr);
+}
+
+//these two functions take effect instantly
+int
+wclrtobot			(WINDOW *window)
+{
+	COORD_S _tmp_cur_pos = window->_cur;
+
+	DWORD _written_length;
+
+	FillConsoleOutputCharacter(
+		GetStdHandle(STD_OUTPUT_HANDLE),
+		//whether should I change to the window->_bkgd_ch
+		' ',
+		(window->_size._y) - (_tmp_cur_pos._y),
+		_coord_create(_tmp_cur_pos._y, _tmp_cur_pos._x),
+		&_written_length
+	);
+
+	if(wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x) == ERR)
+		return ERR;
+	return OK;
+}
+
+int
+wclrtoeol			(WINDOW *window)
+{
+	COORD_S _tmp_cur_pos = window->_cur;
+
+	if(wmove(window,_tmp_cur_pos._y, 0) == ERR)
+		return ERR;
+	
+	for(int i=0;i<window->_size._x;++i)
+		if (addch(' ') == ERR)
+			return ERR;
+
+	if (wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x) == ERR)
+		return ERR;
+	return OK;
+}
+
 
 //-------------------private
 inline COORD	
@@ -671,19 +755,19 @@ _swapbuffer_swap	(HANDLE *a, HANDLE *b)
 }
 
 inline BOOL
-_clear_buffer		(HANDLE buffer,chtype input)
+_clear_buffer		(HANDLE buffer, chtype input)
 {
 	CONSOLE_SCREEN_BUFFER_INFO _buffer_info;
 	if (!GetConsoleScreenBufferInfo(buffer, &_buffer_info))
 		return FALSE;
 	DWORD _length = (DWORD)(
-		(_buffer_info.srWindow.Bottom-_buffer_info.srWindow.Top)
+		(_buffer_info.srWindow.Bottom - _buffer_info.srWindow.Top)
 		*
-		(_buffer_info.srWindow.Right-_buffer_info.srWindow.Left)
-	);
+		(_buffer_info.srWindow.Right - _buffer_info.srWindow.Left)
+		);
 	//unused
 	DWORD _length_written;
-	if(!FillConsoleOutputCharacter(buffer,input,_length,_coord_create(0,0),&_length_written))
+	if (!FillConsoleOutputCharacter(buffer, input, _length, _coord_create(0, 0), &_length_written))
 		return FALSE;
 	return TRUE;
 }

@@ -9,6 +9,22 @@
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
 
+#define ACS_VLINE
+#define ACS_HLINE
+#define ACS_ULCORNER
+#define ACS_URCORNER
+#define ACS_BLCORNER
+#define ACS_BRCORNER
+
+#define COLOR_BLACK			0
+#define COLOR_RED			1
+#define COLOR_GREEN			2
+#define COLOR_YELLOW		3
+#define COLOR_BLUE			4
+#define COLOR_MAGENTA		5
+#define COLOR_CYAN			6
+#define COLOR_WHITE			7
+
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
@@ -101,5 +117,15 @@ extern	int		mvvline			(int, int, chtype, int);
 extern	int		mvwhline		(WINDOW *,int, int, chtype, int);
 extern	int		mvwvline		(WINDOW *,int, int, chtype, int);
 extern	int		curs_set		(int);
+extern	int		clear			(void);
+extern	int		wclear			(WINDOW *);
+extern	int		erase			(void);
+extern	int		werase			(WINDOW *);
+extern	int		clrtobot		(void);
+extern	int		clrtoeol		(void);
+extern	int		wclrtobot		(WINDOW *);
+extern	int		wclrtoeol		(WINDOW *);
+//getch has the effect of refresh
+extern	int		getch			(void);
 
 #endif
