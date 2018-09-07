@@ -59,6 +59,8 @@ int					clrtobot			(void);
 int					clrtoeol			(void);
 int					wclrtobot			(WINDOW *);
 int					wclrtoeol			(WINDOW *);
+int					instr				(char *output);
+int					mvcur				(int oldrow, int oldcol, int newrow, int newcol);
 
 
 //-------------------private functions
@@ -573,7 +575,7 @@ whline				(WINDOW *window, chtype ch, int n)
 	COORD_S _tmp_cur_pos = window->_cur;
 	int _length = MIN(n, (window->_size._x) - (window->_cur._x) + 1);
 	for (int i = 0; i < _length; ++i)
-		if(waddch(window,ch) == ERR)
+	 	if(waddch(window,ch) == ERR)
 			return ERR;
 	return wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
 }
