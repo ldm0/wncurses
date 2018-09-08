@@ -112,15 +112,16 @@ initscr				(void)
 	stdscr->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
 		GENERIC_READ | GENERIC_WRITE,
 		//I dont what the console share mode means, so set it to 0 to see if something wrong happens
-		0,
+		//0,
+		//yes something wrong happens
+		FILE_SHARE_WRITE | FILE_SHARE_READ,
 		NULL,
 		CONSOLE_TEXTMODE_BUFFER,
 		NULL
 	);
 	stdscr->_swapbuffer[SWAPBUFFER_BACK] = CreateConsoleScreenBuffer(
 		GENERIC_READ | GENERIC_WRITE,
-		//I dont what the console share mode means, so set it to 0 to see if something wrong happens
-		0,
+		FILE_SHARE_WRITE | FILE_SHARE_READ,
 		NULL,
 		CONSOLE_TEXTMODE_BUFFER,
 		NULL
@@ -180,25 +181,22 @@ refresh				(void)
 //so we need to move the back cursor position to the back buffer cursor position 
 //and move the front buffer's data to the back buffer
 
-/*------------------ATTENTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  If there is bug, might be this*/
-
 int
 wrefresh			(WINDOW *window)
 {
-	_swapbuffer_swap(window->_swapbuffer[SWAPBUFFER_FRONT],window->_swapbuffer[SWAPBUFFER_BACK]);
+	_swapbuffer_swap(&(window->_swapbuffer[SWAPBUFFER_FRONT]),&(window->_swapbuffer[SWAPBUFFER_BACK]));
 
-	//unfinished
-	//I dont know if this is essential, depends on the implementation of the setconsoleActiveScreenBuffer
+	//This function call is essential
 	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
 
 	if(_cursor_sync(window)==ERR)
 		return ERR;
 
-	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*window->_size._x*window->_size._y);
+	CHAR_INFO *_tmp_data = (CHAR_INFO*)malloc(sizeof(CHAR_INFO)*window->_size._x*window->_size._y);
 	if(_tmp_data==NULL)
 		return ERR;
 
-	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x),(window->_beg._y) + (window->_size._y) };
+	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x) - 1,(window->_beg._y) + (window->_size._y) - 1 };
 	ReadConsoleOutput(
 		window->_swapbuffer[SWAPBUFFER_FRONT], 
 		_tmp_data, 
@@ -342,8 +340,6 @@ wmove				(WINDOW *window, int y, int x)
 {
 	window->_cur._y = y;
 	window->_cur._x = x;
-	if(!SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create((short)y, (short)x)))
-		return ERR;
 	return OK;
 }
 
@@ -533,8 +529,7 @@ flash				(void)
 {
 	HANDLE _white_console_buffer = CreateConsoleScreenBuffer(
 		GENERIC_READ | GENERIC_WRITE,
-		//I dont what the console share mode means, so set it to 0 to see if something wrong happens
-		0,
+		FILE_SHARE_WRITE | FILE_SHARE_READ,
 		NULL,
 		CONSOLE_TEXTMODE_BUFFER,
 		NULL
@@ -543,6 +538,7 @@ flash				(void)
 		return ERR;
 	_clear_buffer(_white_console_buffer,'B');
 	SetConsoleActiveScreenBuffer(_white_console_buffer);
+	Sleep(100);
 	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
 	CloseHandle(_white_console_buffer);
 	return OK;
@@ -606,7 +602,7 @@ int
 wvline				(WINDOW *window, chtype ch, int n)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
-	for (int i = _tmp_cur_pos._y; i < window->_size._y; ++i)
+	for (int i = _tmp_cur_pos._y; i < MIN(_tmp_cur_pos._y + n - 1, window->_size._y); ++i)
 		mvwaddch(window, i, _tmp_cur_pos._x, ch);
 	wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
 	return OK;
@@ -719,9 +715,17 @@ wclrtoeol			(WINDOW *window)
 	return OK;
 }
 
+int
+getch				(void)
+{
+	char _input = 0;
+	refresh();
+	return _input; 
+}
+
 
 //-------------------private
-inline COORD	
+inline COORD
 _coord_create		(short y, short x)
 {
 	COORD _tmp;
@@ -751,7 +755,7 @@ _swapbuffer_swap	(HANDLE *a, HANDLE *b)
 {
 	//How to xor the void* type..... Temporily use the _tmp.
 	HANDLE _tmp;
-	_tmp=*a;
+	_tmp = *a;
 	*a = *b;
 	*b = _tmp;
 }
@@ -763,9 +767,9 @@ _clear_buffer		(HANDLE buffer, chtype input)
 	if (!GetConsoleScreenBufferInfo(buffer, &_buffer_info))
 		return FALSE;
 	DWORD _length = (DWORD)(
-		(_buffer_info.srWindow.Bottom - _buffer_info.srWindow.Top)
+		(_buffer_info.srWindow.Bottom - _buffer_info.srWindow.Top + 1)
 		*
-		(_buffer_info.srWindow.Right - _buffer_info.srWindow.Left)
+		(_buffer_info.srWindow.Right - _buffer_info.srWindow.Left + 1)
 		);
 	//unused
 	DWORD _length_written;
