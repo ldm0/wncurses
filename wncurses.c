@@ -37,6 +37,7 @@ int					mvwprintw			(WINDOW *window, int y,int x,const char *input,...);
 int					baudrate			(void);
 int					beep				(void);
 int					bkgd				(chtype input);
+int					wbkgd				(WINDOW *window, chtype input);
 int					border				(chtype ls,chtype rs,chtype ts,chtype bs,chtype tl,chtype tr,chtype bl,chtype br);
 int					wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
 int					box					(WINDOW *window, chtype verch, chtype horch);
@@ -171,7 +172,7 @@ endwin				(void)
 int 
 refresh				(void)
 {
-	wrefresh(stdscr);
+	return wrefresh(stdscr);
 }
 
 //----refersh line
@@ -184,13 +185,13 @@ refresh				(void)
 int
 wrefresh			(WINDOW *window)
 {
+	if(_cursor_sync(window)==ERR)
+		return ERR;
+
 	_swapbuffer_swap(&(window->_swapbuffer[SWAPBUFFER_FRONT]),&(window->_swapbuffer[SWAPBUFFER_BACK]));
 
 	//This function call is essential
 	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
-
-	if(_cursor_sync(window)==ERR)
-		return ERR;
 
 	CHAR_INFO *_tmp_data = (CHAR_INFO*)malloc(sizeof(CHAR_INFO)*window->_size._x*window->_size._y);
 	if(_tmp_data==NULL)
@@ -223,35 +224,54 @@ addch				(chtype input)
 	return waddch(stdscr,input);
 }
 
-/*
 int
 waddch				(WINDOW* window,chtype input)
 {
 	CHAR_INFO _input_ch;
-	_input_ch.Char.AsciiChar=input;
-	_input_ch.Char.UnicodeChar=input;
+	_input_ch.Char.AsciiChar = input;
+	_input_ch.Char.UnicodeChar = input;
 	_input_ch.Attributes = window->_cur_color;
 
-	COORD _size= _coord_create(1,1);
-	COORD _begin=_coord_create(window->_cur._y,window->_cur._x);
-	SMALL_RECT _region = { _begin.X,_begin.Y,_begin.X + _size.X,_begin.Y + _size.Y };
+	COORD _size = _coord_create(1, 1);
+	COORD _begin = _coord_create(0, 0);
+	SMALL_RECT _region = { 
+		window->_cur._x,
+		window->_cur._y,
+		window->_cur._x + (window->_size._x) - 1,
+		window->_cur._y + window->_size._y - 1
+	};
 
-	//actually the '\r' and '\n'can be print to the screen but seems like a square
-	if(input=='\r')
-		wmove(window,window->_cur._y,0);
-	else if(input =='\n')
-		wmove(window,(window->_cur._y)+1,0);
-	else{
-		if (!WriteConsoleOutput(window->_swapbuffer[SWAPBUFFER_BACK], &_input_ch, _size, _begin, &_region))
+	//Without the judgemet, actually the '\r' and '\n'can be print to the screen but seems like a square
+	if (input == '\r')
+		window->_cur._x = 0;
+	else if (input == '\n'){
+		window->_cur._y++;
+		window->_cur._x = 0;
+	}
+	else {
+		if (
+			!WriteConsoleOutput(
+				window->_swapbuffer[SWAPBUFFER_BACK], 
+				&_input_ch, 
+				_size, 
+				_begin, 
+				&_region
+			)
+		) {
+			DWORD err_code = GetLastError();
 			return ERR;
+		}
 		window->_cur._x = (window->_cur._x + 1) % (window->_size._x);
 		window->_cur._y += (window->_cur._x == 0);
-		if(_cursor_sync(window)==ERR)
-			return ERR;
 	}
 	return OK;
 }
-*/
+/*
+The main fucking problem why I can't use this covinient function is
+the WriteConsole function writes things after the actual cursor position
+and most time before refresh was called, the actual cursor position differs
+from the window->_cur.
+
 int
 waddch				(WINDOW *window,chtype input)
 {
@@ -260,6 +280,7 @@ waddch				(WINDOW *window,chtype input)
 		return ERR;
 	return OK;
 }
+*/
 
 //finally I will make it MACRO
 int
@@ -293,6 +314,7 @@ waddstr				(WINDOW *window, const char *input)
 	return waddnstr(window, input, -1);
 }
 
+/*
 int
 waddnstr			(WINDOW *window,const char *input,int n)
 {
@@ -300,6 +322,21 @@ waddnstr			(WINDOW *window,const char *input,int n)
 	DWORD _written_length;
 	if (!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK],input, ((n == -1) || (n > _strlen_chstr)) ? _strlen_chstr : n, &_written_length, NULL))
 		return ERR;
+	return OK;
+}
+*/
+
+int
+waddnstr			(WINDOW *window, const char *input, int n)
+{
+	if (n == -1)
+		for (int i = 0; input[i]; ++i)
+			if (waddch(window, input[i]) == ERR)
+				return ERR;
+	else
+		for (int i = 0; i < n && input[i]; ++i)
+			if (waddch(window, input[i]) == ERR)
+				return ERR;
 	return OK;
 }
 
@@ -332,7 +369,7 @@ mvwaddnstr			(WINDOW *window, int y, int x, const char *input, int n)
 int
 move				(int y, int x)
 {
-	return wmove(stdscr,y,x);
+	return wmove(stdscr, y, x);
 }
 
 int 
@@ -365,14 +402,7 @@ waddchstr			(WINDOW *window, const chtype *chstr)
 int					
 waddchnstr			(WINDOW *window, const chtype *chstr, int n)
 {
-	size_t _strlen_chstr = strlen(chstr);
-	DWORD _length_written;
-	//The reason why I don't use the WriteConsoleInput() function is 
-	//it's behavior when the string exceeds the row is different from the what we want.
-	//It will cast a lot more time to fix it.
-	if (!WriteConsole(window->_swapbuffer[SWAPBUFFER_BACK], chstr, ((n == -1) || (n > _strlen_chstr)) ? _strlen_chstr : n, &_length_written, NULL))
-		return ERR;
-	return OK;
+	return waddnstr(window, chstr, n);
 }
 
 int
@@ -438,7 +468,7 @@ wbkgd				(WINDOW *window, chtype input)
 	//This function scan the whole screen and change the every char same as the _bkgd_ch to the input.
 
 	int _tmp_data_length = window->_size._x*window->_size._y;
-	TCHAR *_tmp_data = (TCHAR*)malloc(sizeof(TCHAR)*_tmp_data_length);
+	CHAR_INFO *_tmp_data = (CHAR_INFO*)malloc(sizeof(CHAR_INFO)*_tmp_data_length);
 	if(_tmp_data==NULL)
 		return ERR;
 
@@ -454,8 +484,11 @@ wbkgd				(WINDOW *window, chtype input)
 
 	//change chars
 	for(int i=0;i<_tmp_data_length;++i)
-		if(_tmp_data[i]==window->_bkgd_ch)
-			_tmp_data[i]=input;
+		if (_tmp_data[i].Char.AsciiChar == window->_bkgd_ch){
+			_tmp_data[i].Char.AsciiChar = input;
+			_tmp_data[i].Char.UnicodeChar = input;
+		}
+
 
 	//write chars
 	WriteConsoleOutput(
@@ -466,20 +499,20 @@ wbkgd				(WINDOW *window, chtype input)
 		&_reg
 	);
 
-	window->_bkgd_ch = input;
+	free(_tmp_data);
 
-	wrefresh(window);
+	window->_bkgd_ch = input;
 
 	return OK;
 }
-extern	
+
 int
 border				(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
 	return wborder(stdscr, ls, rs, ts, bs, tl, tr, bl, br);
 }
 
-//the init val havent been set
+//the default value havent been set
 /*
 ls - left side,
 rs - right side,
@@ -781,5 +814,6 @@ _clear_buffer		(HANDLE buffer, chtype input)
 BOOL
 _cursor_sync		(WINDOW *window)
 {
-	return SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create(window->_cur._y, window->_cur._x));
+	if(!SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create(window->_cur._y, window->_cur._x)))
+		return ERR;
 }
