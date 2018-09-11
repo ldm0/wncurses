@@ -58,9 +58,18 @@ int					erase				(void);
 int					werase				(WINDOW *window);
 int					clrtobot			(void);
 int					clrtoeol			(void);
-int					wclrtobot			(WINDOW *);
-int					wclrtoeol			(WINDOW *);
+int					wclrtobot			(WINDOW *window);
+int					wclrtoeol			(WINDOW *window);
+int					getch				(void);
+int					wgetch				(WINDOW *window);
 int					instr				(char *output);
+int					innstr				(char *output, int n);
+int					winstr				(WINDOW *window, char *output);
+int					winnstr				(WINDOW *window, char *output, int n);
+int					mvinstr				(int y, int x, char *);
+int					mvinnstr			(int y, int x, char *, int n);
+int					mvwinstr			(WINDOW *, int y, int x, char *);
+int					mvwinnstr			(WINDOW *, int y, int x, char *, int n);
 int					mvcur				(int oldrow, int oldcol, int newrow, int newcol);
 
 
@@ -437,7 +446,7 @@ baudrate			(void)
 	//It seems that there is no baud rate in windows terminal? I am uncertain.
 	return -1;
 }
-
+	
 int 
 beep				(void)
 {
@@ -681,8 +690,7 @@ clear				(void)
 int
 wclear				(WINDOW *window)
 {
-	_clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], ' ');
-	return wrefresh(window);
+	return _clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], ' ');
 }
 
 int
@@ -701,12 +709,6 @@ int
 clrtobot			(void)
 {
 	return wclrtobot(stdscr);
-}
-
-int
-clrtoeol			(void)
-{
-	return wclrtoeol(stdscr);
 }
 
 //these two functions take effect instantly
@@ -732,15 +734,21 @@ wclrtobot			(WINDOW *window)
 }
 
 int
+clrtoeol			(void)
+{
+	return wclrtoeol(stdscr);
+}
+
+int
 wclrtoeol			(WINDOW *window)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
 
-	if(wmove(window,_tmp_cur_pos._y, 0) == ERR)
+	if (wmove(window, _tmp_cur_pos._y, 0) == ERR)
 		return ERR;
 	
 	for(int i=0;i<window->_size._x;++i)
-		if (addch(' ') == ERR)
+		if (waddch(window, ' ') == ERR)
 			return ERR;
 
 	if (wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x) == ERR)
@@ -751,14 +759,101 @@ wclrtoeol			(WINDOW *window)
 int
 getch				(void)
 {
+	return wgetch(stdscr);
+}
+
+//unfinished
+int
+wgetch				(WINDOW *window)
+{
 	char _input = 0;
+	DWORD _read_length;
+	//if(!ReadConsole(GetStdHandle(STD_INPUT_HANDLE),_input,1,&_read_length,);
 	refresh();
 	return _input; 
 }
 
+int
+instr				(char *output)
+{
+	return winstr(stdscr, output);
+}
+
+int
+innstr				(char *output, int n)
+{
+	return winnstr(stdscr, output, n);
+}
+
+int
+winstr				(WINDOW *window, char *output)
+{
+	return winnstr(window, output, -1);
+}
+
+int
+winnstr				(WINDOW *window, char *output, int n)
+{
+	DWORD _read_length;
+	DWORD _tmp_length = (n == -1) ?
+		window->_size._x - window->_cur._x
+		:
+		MIN(n, window->_size._x - window->_cur._x)
+		;
+	if (
+		!ReadConsoleOutputCharacter(
+			window->_swapbuffer[SWAPBUFFER_BACK],
+			output,
+			_tmp_length,
+			_coord_create(window->_cur._y, window->_cur._x),
+			&_read_length
+		)
+		)
+		return ERR;
+	return OK;
+}
+
+int
+mvinstr				(int y, int x, char *output)
+{
+	return mvwinstr(stdscr, y, x, output);
+}
+
+int
+mvinnstr			(int y, int x, char *output, int n)
+{
+	return mvwinnstr(stdscr, y, x, output, n);
+}
+
+int
+mvwinstr			(WINDOW *window, int y, int x, char *output)
+{
+	return mvwinnstr(window, y, x, output, -1);
+}
+
+int
+mvwinnstr			(WINDOW *window, int y, int x, char *output, int n)
+{
+	if (wmove(window, y, x) == ERR)
+		return ERR;
+	return winnstr(window, output, n);
+}
+
+int
+mvcur				(int oldrow, int oldcol, int newrow, int newcol)
+{
+	stdscr->_cur._x += newcol - oldcol;
+	stdscr->_cur._y += newrow - oldrow;
+	return OK;
+}
+
+
+
+
+
 
 //-------------------private
-inline COORD
+inline	COORD
 _coord_create		(short y, short x)
 {
 	COORD _tmp;
@@ -767,7 +862,7 @@ _coord_create		(short y, short x)
 	return _tmp;
 }
 
-inline COORD_S
+inline	COORD_S
 _coord_s_create		(short y, short x)
 {
 	COORD_S _tmp;
@@ -776,14 +871,14 @@ _coord_s_create		(short y, short x)
 	return _tmp;
 }
 
-inline void
+inline	void
 _coord_s_init		(COORD_S *coord_s,short y,short x)
 {
 	coord_s->_y = y;
 	coord_s->_x = x;
 }
 
-inline void
+inline	void
 _swapbuffer_swap	(HANDLE *a, HANDLE *b)
 {
 	//How to xor the void* type..... Temporily use the _tmp.
@@ -793,12 +888,12 @@ _swapbuffer_swap	(HANDLE *a, HANDLE *b)
 	*b = _tmp;
 }
 
-inline BOOL
+inline	BOOL
 _clear_buffer		(HANDLE buffer, chtype input)
 {
 	CONSOLE_SCREEN_BUFFER_INFO _buffer_info;
 	if (!GetConsoleScreenBufferInfo(buffer, &_buffer_info))
-		return FALSE;
+		return ERR;
 	DWORD _length = (DWORD)(
 		(_buffer_info.srWindow.Bottom - _buffer_info.srWindow.Top + 1)
 		*
@@ -807,11 +902,11 @@ _clear_buffer		(HANDLE buffer, chtype input)
 	//unused
 	DWORD _length_written;
 	if (!FillConsoleOutputCharacter(buffer, input, _length, _coord_create(0, 0), &_length_written))
-		return FALSE;
-	return TRUE;
+		return ERR;
+	return OK;
 }
 
-BOOL
+inline	BOOL
 _cursor_sync		(WINDOW *window)
 {
 	if(!SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create(window->_cur._y, window->_cur._x)))

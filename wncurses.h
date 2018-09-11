@@ -127,7 +127,15 @@ extern	int		wclrtobot		(WINDOW *);
 extern	int		wclrtoeol		(WINDOW *);
 //getch has the effect of refresh
 extern	int		getch			(void);
+extern	int		wgetch			(WINDOW *window);
 extern	int		instr			(char *);
+extern	int		innstr			(char *, int n);
+extern	int		winstr			(WINDOW *, char *);
+extern	int		winnstr			(WINDOW *, char *, int n);
+extern	int		mvinstr			(int y, int x, char *);
+extern	int		mvinnstr		(int y, int x, char *, int n);
+extern	int		mvwinstr		(WINDOW *, int y, int x, char *);
+extern	int		mvwinnstr		(WINDOW *, int y, int x, char *, int n);
 extern	int		mvcur			(int, int, int, int);
 
 #endif
