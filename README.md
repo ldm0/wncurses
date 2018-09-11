@@ -1,5 +1,5 @@
 # wncurses
-![progress](http://progressed.io/bar/15?title=progress)
+![progress](http://progressed.io/bar/20?title=progress)
 ![build](https://img.shields.io/badge/build-passed-brightgreen.svg)
 
 NCURSES in console of MS Windows.
@@ -10,4 +10,6 @@ However there is no a windows version.What I found now is only a uncomplete vers
 
 If this is built up, It will be fairly easy to transfer some linux applications to the windows console application.
 
-So I decided to build it(hopefully not to crap it).(18/8/23)
+So I decided to build it(hopeully don't mess up). (18/8/23)
+
+The problems are way more than I thought. (18/9/11)
