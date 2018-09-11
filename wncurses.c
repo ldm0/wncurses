@@ -54,6 +54,7 @@ int					mvwvline			(WINDOW*, int y, int x, chtype ch, int n);
 int					curs_set			(int n);
 int					clear				(void);
 int					wclear				(WINDOW *window);
+int					clearok				(WINDOW *window, bool n);
 int					erase				(void);
 int					werase				(WINDOW *window);
 int					clrtobot			(void);
@@ -691,6 +692,13 @@ int
 wclear				(WINDOW *window)
 {
 	return _clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], ' ');
+}
+
+//unfinished
+int
+clearok				(WINDOW *window, bool n)
+{
+
 }
 
 int

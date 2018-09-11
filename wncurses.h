@@ -119,6 +119,7 @@ extern	int		mvwvline		(WINDOW *,int, int, chtype, int);
 extern	int		curs_set		(int);
 extern	int		clear			(void);
 extern	int		wclear			(WINDOW *);
+extern	int		clearok			(WINDOW *, bool);
 extern	int		erase			(void);
 extern	int		werase			(WINDOW *);
 extern	int		clrtobot		(void);
