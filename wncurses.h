@@ -1,10 +1,10 @@
 #ifndef __WNCURSES_H
 #define __WNCURSES_H
 
-#define ERR 0
+#define TRUE 1
 #define FALSE 0
 #define OK 1
-#define TRUE 1
+#define ERR 0
 
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
@@ -151,5 +151,9 @@ extern	int		getmaxy			(const WINDOW *);
 extern	int		getparx			(const WINDOW *);
 extern	int		getpary			(const WINDOW *);
 extern	chtype	getbkgd			(WINDOW *);
+extern	int		delch			(void);
+extern	int		wdelch			(WINDOW *window);
+extern	int		mvdelch			(int y, int x);
+extern	int		mvwdelch		(WINDOW *window, int y, int x);
 
 #endif

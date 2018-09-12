@@ -83,6 +83,10 @@ int					getmaxy				(const WINDOW *window);
 int					getparx				(const WINDOW *window);
 int					getpary				(const WINDOW *window);
 chtype				getbkgd				(WINDOW *window);
+int					delch				(void);
+int					wdelch				(WINDOW *window);
+int					mvdelch				(int y, int x);
+int					mvwdelch			(WINDOW *window, int y, int x);
 
 
 
@@ -720,7 +724,9 @@ clear				(void)
 int
 wclear				(WINDOW *window)
 {
-	return _clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], ' ');
+	if(_clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], window->_bkgd)==FALSE)
+		return ERR;
+	return clearok(window, TRUE);
 }
 
 int
@@ -857,7 +863,7 @@ winnstr				(WINDOW *window, char *output, int n)
 			_coord_create(window->_cur._y, window->_cur._x),
 			&_read_length
 		)
-		)
+	)
 		return ERR;
 	return OK;
 }
@@ -950,6 +956,57 @@ getbkgd				(WINDOW *window)
 	return window->_bkgd;
 }
 
+int
+delch				(void)
+{
+	return wdelch(stdscr);
+}
+
+int
+wdelch				(WINDOW *window)
+{
+	DWORD _read_length;
+
+	//The reason why the length is two char longer than the actual length is 
+	//we need a char to fullfill the end of this line and a char to place 0
+	char *_tmp_str = (char *)malloc((window->_size._x - window->_cur._x + 1) * sizeof(char));
+	if (_tmp_str == NULL)
+		return ERR;
+
+	if (
+		!ReadConsoleOutputCharacter(
+			window->_swapbuffer[SWAPBUFFER_BACK],
+			_tmp_str,
+			window->_size._x - window->_cur._x - 1,
+			_coord_create(window->_cur._y, window->_cur._x + 1),
+			&_read_length
+		)
+	)
+		return ERR;
+
+	_tmp_str[window->_size._x - window->_cur._x - 1] = window->_bkgd;
+	_tmp_str[window->_size._x - window->_cur._x] = 0;
+
+	if (!waddstr(window, _tmp_str))
+		return ERR;
+
+	free(_tmp_str);
+	return OK;
+}
+
+int
+mvdelch				(int y, int x)
+{
+	return mvwdelch(stdscr, y, x);
+}
+
+int
+mvwdelch			(WINDOW *window, int y, int x)
+{
+	if (!wmove(window, y, x))
+		return ERR;
+	return wdelch(window);
+}
 
 
 
