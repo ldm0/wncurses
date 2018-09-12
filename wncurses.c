@@ -38,6 +38,8 @@ int					baudrate			(void);
 int					beep				(void);
 int					bkgd				(chtype input);
 int					wbkgd				(WINDOW *window, chtype input);
+void				bkgdset				(const chtype input);
+void				wbkgdset			(WINDOW *window, const chtype input);
 int					border				(chtype ls,chtype rs,chtype ts,chtype bs,chtype tl,chtype tr,chtype bl,chtype br);
 int					wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
 int					box					(WINDOW *window, chtype verch, chtype horch);
@@ -72,6 +74,16 @@ int					mvinnstr			(int y, int x, char *, int n);
 int					mvwinstr			(WINDOW *, int y, int x, char *);
 int					mvwinnstr			(WINDOW *, int y, int x, char *, int n);
 int					mvcur				(int oldrow, int oldcol, int newrow, int newcol);
+int					getcurx				(const WINDOW *window);
+int					getcury				(const WINDOW *window);
+int					getbegx				(const WINDOW *window);
+int					getbegy				(const WINDOW *window);
+int					getmaxx				(const WINDOW *window);
+int					getmaxy				(const WINDOW *window);
+int					getparx				(const WINDOW *window);
+int					getpary				(const WINDOW *window);
+chtype				getbkgd				(WINDOW *window);
+
 
 
 //-------------------private functions
@@ -108,6 +120,11 @@ initscr				(void)
 		0
 	);
 	_coord_s_init(
+		&(stdscr->_par),
+		0,
+		0
+	);
+	_coord_s_init(
 		&(stdscr->_size),
 		console_info.srWindow.Bottom - (stdscr->_beg._y) + 1,
 		console_info.srWindow.Right - (stdscr->_beg._x) + 1
@@ -116,7 +133,7 @@ initscr				(void)
 	LINES				= stdscr->_size._y;
 	COLS				= stdscr->_size._x;
 
-	stdscr->_bkgd_ch = ' ';
+	stdscr->_bkgd = ' ';
 
 	stdscr->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 
@@ -475,7 +492,7 @@ wbkgd				(WINDOW *window, chtype input)
 	//and more interestingly this function have the effet of refresh , if we print something before the bkgd function but don't refresh, 
 	//the things printed will be presented, which can be tested in the test_bkgd file
 	//Secondly, this function was implemented interestingly. There is a background char in the WINDOW struct.
-	//This function scan the whole screen and change the every char same as the _bkgd_ch to the input.
+	//This function scan the whole screen and change the every char same as the _bkgd to the input.
 
 	int _tmp_data_length = window->_size._x*window->_size._y;
 	CHAR_INFO *_tmp_data = (CHAR_INFO*)malloc(sizeof(CHAR_INFO)*_tmp_data_length);
@@ -494,7 +511,7 @@ wbkgd				(WINDOW *window, chtype input)
 
 	//change chars
 	for(int i=0;i<_tmp_data_length;++i)
-		if (_tmp_data[i].Char.AsciiChar == window->_bkgd_ch){
+		if (_tmp_data[i].Char.AsciiChar == window->_bkgd){
 			_tmp_data[i].Char.AsciiChar = input;
 			_tmp_data[i].Char.UnicodeChar = input;
 		}
@@ -511,9 +528,21 @@ wbkgd				(WINDOW *window, chtype input)
 
 	free(_tmp_data);
 
-	window->_bkgd_ch = input;
+	window->_bkgd = input;
 
 	return OK;
+}
+
+void
+bkgdset				(const chtype input)
+{
+	wbkgdset(stdscr, input);
+}
+
+void
+wbkgdset			(WINDOW *window, const chtype input)
+{
+	window->_bkgd = input;
 }
 
 int
@@ -694,11 +723,11 @@ wclear				(WINDOW *window)
 	return _clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], ' ');
 }
 
-//unfinished
 int
 clearok				(WINDOW *window, bool n)
 {
-
+	window->_clear = n;
+	return OK;
 }
 
 int
@@ -719,7 +748,6 @@ clrtobot			(void)
 	return wclrtobot(stdscr);
 }
 
-//these two functions take effect instantly
 int
 wclrtobot			(WINDOW *window)
 {
@@ -729,8 +757,7 @@ wclrtobot			(WINDOW *window)
 
 	FillConsoleOutputCharacter(
 		GetStdHandle(STD_OUTPUT_HANDLE),
-		//whether should I change to the window->_bkgd_ch
-		' ',
+		window->_bkgd,
 		(window->_size._y) - (_tmp_cur_pos._y),
 		_coord_create(_tmp_cur_pos._y, _tmp_cur_pos._x),
 		&_written_length
@@ -756,7 +783,7 @@ wclrtoeol			(WINDOW *window)
 		return ERR;
 	
 	for(int i=0;i<window->_size._x;++i)
-		if (waddch(window, ' ') == ERR)
+		if (waddch(window, window->_bkgd) == ERR)
 			return ERR;
 
 	if (wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x) == ERR)
@@ -770,15 +797,29 @@ getch				(void)
 	return wgetch(stdscr);
 }
 
-//unfinished
 int
 wgetch				(WINDOW *window)
 {
-	char _input = 0;
-	DWORD _read_length;
-	//if(!ReadConsole(GetStdHandle(STD_INPUT_HANDLE),_input,1,&_read_length,);
 	refresh();
-	return _input; 
+
+	INPUT_RECORD _tmp_input_record;
+	DWORD _read_events;
+	do{
+		if (
+			!ReadConsoleInput(
+			GetStdHandle(STD_INPUT_HANDLE),
+			&_tmp_input_record,
+			1, 
+			&_read_events)
+		)
+			return ERR;
+	} while (
+		_tmp_input_record.EventType != KEY_EVENT 
+		||
+		_tmp_input_record.Event.KeyEvent.bKeyDown == FALSE
+		);
+
+	return _tmp_input_record.Event.KeyEvent.uChar.AsciiChar;
 }
 
 int
@@ -855,7 +896,59 @@ mvcur				(int oldrow, int oldcol, int newrow, int newcol)
 	return OK;
 }
 
+int
+getcurx				(const WINDOW *window)
+{
+	return window->_cur._x;
+}
 
+int
+getcury				(const WINDOW *window)
+{
+	return window->_cur._y;
+}
+
+int
+getbegx				(const WINDOW *window)
+{
+	return window->_beg._x;
+}
+
+int
+getbegy				(const WINDOW *window)
+{
+	return window->_beg._y;
+}
+
+int
+getmaxx				(const WINDOW *window)
+{
+	return window->_beg._x+window->_size._x;
+}
+
+int
+getmaxy				(const WINDOW *window)
+{
+	return window->_beg._y+window->_size._y;
+}
+
+int
+getparx				(const WINDOW *window)
+{
+	return window->_par._x;
+}
+
+int
+getpary				(const WINDOW *window)
+{
+	return window->_par._y;
+}
+
+chtype
+getbkgd				(WINDOW *window)
+{
+	return window->_bkgd;
+}
 
 
 

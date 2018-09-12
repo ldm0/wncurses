@@ -42,28 +42,28 @@ struct _coord_s_st{
 
 struct _window_st{
     //beg coord means the upper left corner 
-	COORD_S		_cur, _beg, _size;
+	COORD_S		_cur, _beg, _par, _size;
+
+	WINDOW		*parent;
 
 	WORD		_cur_color;
 
     //the former is the front buffer
 	HANDLE		_swapbuffer[2];
 
-	chtype		_bkgd_ch;
+	chtype		_bkgd;
 
     /* option values set by user */
-    struct window_state{
-        bool	_notimeout  :1;	/* no time out on function-key entry? */
-        bool	_clear      :1;	/* consider all data in the window invalid? */
-        bool	_leaveok    :1;	/* OK to not reset cursor on exit? */
-        bool	_scroll     :1;	/* OK to scroll this window? */
-        bool	_idlok      :1;	/* OK to use insert/delete line? */
-        bool	_idcok      :1;	/* OK to use insert/delete char? */
-        bool	_sync       :1;	/* window in sync mode? */
-        bool	_use_keypad :1;	/* process function keys into KEY_ symbols? */
-        //bool	_immed      :1;	/* window in immed mode? (not yet used) */
-        int     _delay;	        /* 0 = nodelay, <0 = blocking, >0 = delay */
-    }_state;
+	bool		_notimeout;		/* no time out on function-key entry? */
+	bool		_clear;			/* consider all data in the window invalid? */
+	bool		_leaveok;		/* OK to not reset cursor on exit? */
+	bool		_scroll;		/* OK to scroll this window? */
+	bool		_idlok;			/* OK to use insert/delete line? */
+	bool		_idcok;			/* OK to use insert/delete char? */
+	bool		_sync;			/* window in sync mode? */
+	bool		_use_keypad;	/* process function keys into KEY_ symbols? */
+	//bool		_immed;			/* window in immed mode? (not yet used) */
+	int			 _delay;	        /* 0 = nodelay, <0 = blocking, >0 = delay */
 };
 
 extern	int		COLS;
@@ -103,6 +103,9 @@ extern	int		mvwprintw		(int,int,WINDOW *,const char*,...);
 extern	int		baudrate		(void);
 extern	int		beep			(void);
 extern	int		bkgd			(chtype);
+extern	int		wbkgd			(WINDOW *, chtype);
+extern	void	bkgdset			(const chtype ch);
+extern	void	wbkgdset		(WINDOW *, const chtype);
 extern	int		border			(chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
 extern	int		wborder			(WINDOW *,chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
 extern	int		box				(WINDOW *,chtype, chtype);
@@ -138,5 +141,15 @@ extern	int		mvinnstr		(int y, int x, char *, int n);
 extern	int		mvwinstr		(WINDOW *, int y, int x, char *);
 extern	int		mvwinnstr		(WINDOW *, int y, int x, char *, int n);
 extern	int		mvcur			(int, int, int, int);
+//The 8 functions below are defined in the ncurses.h but can't be found in Linux man page
+extern	int		getcurx			(const WINDOW *);
+extern	int		getcury			(const WINDOW *);
+extern	int		getbegx			(const WINDOW *);
+extern	int		getbegy			(const WINDOW *);
+extern	int		getmaxx			(const WINDOW *);
+extern	int		getmaxy			(const WINDOW *);
+extern	int		getparx			(const WINDOW *);
+extern	int		getpary			(const WINDOW *);
+extern	chtype	getbkgd			(WINDOW *);
 
 #endif
