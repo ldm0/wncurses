@@ -1,8 +1,8 @@
-int addch (const chtype);		            //implemented
-int addchnstr (const chtype *, int);		//implemented
-int addchstr (const chtype *);			//implemented
-int addnstr (const char *, int);			//implemented
-int addstr (const char *);			//implemented
+int addch (const chtype);
+int addchnstr (const chtype *, int);
+int addchstr (const chtype *);	
+int addnstr (const char *, int);
+int addstr (const char *);
 int attroff (NCURSES_ATTR_T);			/* generated */
 int attron (NCURSES_ATTR_T);			/* generated */
 int attrset (NCURSES_ATTR_T);			/* generated */
@@ -10,24 +10,24 @@ int attr_get (attr_t *, NCURSES_PAIRS_T *, void *);	/* generated */
 int attr_off (attr_t, void *);			/* generated */
 int attr_on (attr_t, void *);			/* generated */
 int attr_set (attr_t, NCURSES_PAIRS_T, void *);		/* generated */
-int baudrate (void);				//implemented
-int beep  (void);				//implemented
-int bkgd (chtype);				//implemented
-void bkgdset (chtype);				/* generated */
-int border (chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);	/* generated */
-int box (WINDOW *, chtype, chtype);		/* generated */
-bool can_change_color (void);			/* implemented */
+int baudrate (void);
+int beep  (void);		
+int bkgd (chtype);
+void bkgdset (chtype);
+int border (chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
+int box (WINDOW *, chtype, chtype);	
+bool can_change_color (void);
 int cbreak (void);				/* implemented */
 int chgat (int, attr_t, NCURSES_PAIRS_T, const void *);	/* generated */
-int clear (void);				/* generated */
-int clearok (WINDOW *,bool);			/* implemented */
-int clrtobot (void);				/* generated */
-int clrtoeol (void);				/* generated */
+int clear (void);		
+int clearok (WINDOW *,bool);
+int clrtobot (void);	
+int clrtoeol (void);
 int color_content (NCURSES_COLOR_T,NCURSES_COLOR_T*,NCURSES_COLOR_T*,NCURSES_COLOR_T*);	/* implemented */
 int color_set (NCURSES_PAIRS_T,void*);			/* generated */
 int COLOR_PAIR (int);				/* generated */
 int copywin (const WINDOW*,WINDOW*,int,int,int,int,int,int,int);	/* implemented */
-int curs_set (int);				/* implemented */
+int curs_set (int);		
 int def_prog_mode (void);			/* implemented */
 int def_shell_mode (void);			/* implemented */
 int delay_output (int);				/* implemented */
