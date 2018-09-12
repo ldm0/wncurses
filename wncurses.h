@@ -28,6 +28,9 @@
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
+#define	LINES	(stdscr->_size._y)
+#define COLS	(stdscr->_size._x)
+
 typedef int						bool;
 typedef	char					chtype;
 //coord short
@@ -44,14 +47,14 @@ struct _window_st{
     //beg coord means the upper left corner 
 	COORD_S		_cur, _beg, _par, _size;
 
-	WINDOW		*parent;
+	WINDOW		*_parent;
 
 	WORD		_cur_color;
 
+	chtype		_bkgd;
+
     //the former is the front buffer
 	HANDLE		_swapbuffer[2];
-
-	chtype		_bkgd;
 
     /* option values set by user */
 	bool		_notimeout;		/* no time out on function-key entry? */
@@ -66,28 +69,33 @@ struct _window_st{
 	int			 _delay;	        /* 0 = nodelay, <0 = blocking, >0 = delay */
 };
 
+/*
 extern	int		COLS;
 extern	int		LINES;
+*/
 extern  WINDOW  *stdscr;
 
 extern  WINDOW*	initscr			(void);
+extern	WINDOW* newwin			(int, int, int, int);
+extern	int		delwin			(WINDOW *);
+extern	int		mvwin			(WINDOW *, int, int);
 extern	int		endwin			(void);
 extern	int		refresh			(void);
 extern	int		wrefresh		(WINDOW*);
 extern	int		addch			(chtype);
-extern	int		waddch			(WINDOW*,chtype);
-extern	int		mvaddch			(int,int,chtype);
-extern	int		mvwaddch		(WINDOW*,int,int,chtype);
+extern	int		waddch			(WINDOW*, chtype);
+extern	int		mvaddch			(int, int, chtype);
+extern	int		mvwaddch		(WINDOW*, int, int, chtype);
 extern	int		addstr			(const char*);
 extern	int		addnstr			(const char*, int);
-extern	int		waddstr			(WINDOW*,const char*);
-extern	int		waddnstr		(WINDOW*,const char*,int);
-extern	int		mvaddstr		(int,int,const char*);
-extern	int		mvaddnstr		(int,int,const char*,int);
-extern	int		mvwaddstr		(WINDOW*,int,int,const char*);
-extern	int		mvwaddnstr		(WINDOW*,int,int,const char*,int);
-extern	int		move			(int,int);
-extern	int		wmove			(WINDOW*,int,int);
+extern	int		waddstr			(WINDOW*, const char*);
+extern	int		waddnstr		(WINDOW*, const char*,int);
+extern	int		mvaddstr		(int, int, const char*);
+extern	int		mvaddnstr		(int, int, const char*, int);
+extern	int		mvwaddstr		(WINDOW*, int, int, const char*);
+extern	int		mvwaddnstr		(WINDOW*, int, int, const char*, int);
+extern	int		move			(int, int);
+extern	int		wmove			(WINDOW*, int, int);
 extern	int		addchstr		(const chtype *);
 extern	int		addchnstr		(const chtype *, int);
 extern	int		waddchstr		(WINDOW *, const chtype *);
@@ -97,18 +105,18 @@ extern	int		mvaddchnstr		(int, int, const chtype *, int);
 extern	int		mvwaddchstr		(WINDOW *, int, int, const chtype *);
 extern	int		mvwaddchnstr	(WINDOW *, int, int, const chtype *, int);
 extern	int		printw			(const char*,...);
-extern	int		mvprintw		(int,int,const char*,...);
-extern	int		wprintw			(WINDOW *,const char*,...);
-extern	int		mvwprintw		(int,int,WINDOW *,const char*,...);
+extern	int		mvprintw		(int, int, const char*,...);
+extern	int		wprintw			(WINDOW *, const char*,...);
+extern	int		mvwprintw		(int, int, WINDOW *, const char*,...);
 extern	int		baudrate		(void);
 extern	int		beep			(void);
 extern	int		bkgd			(chtype);
 extern	int		wbkgd			(WINDOW *, chtype);
 extern	void	bkgdset			(const chtype ch);
 extern	void	wbkgdset		(WINDOW *, const chtype);
-extern	int		border			(chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
-extern	int		wborder			(WINDOW *,chtype,chtype,chtype,chtype,chtype,chtype,chtype,chtype);
-extern	int		box				(WINDOW *,chtype, chtype);
+extern	int		border			(chtype, chtype, chtype, chtype, chtype, chtype, chtype, chtype);
+extern	int		wborder			(WINDOW *, chtype, chtype, chtype, chtype, chtype, chtype, chtype, chtype);
+extern	int		box				(WINDOW *, chtype, chtype);
 extern	int		flash			(void);
 extern	int		can_change_color(void);
 extern	int		hline			(chtype, int);

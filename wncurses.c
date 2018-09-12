@@ -4,6 +4,9 @@
 
 //----------------public functions
 WINDOW*				initscr				(void);
+WINDOW*				newwin				(int nlines, int ncols, int begin_y, int begin_x);
+int					delwin				(WINDOW *window);
+int					mvwin				(WINDOW *window, int y, int x);
 int					endwin				(void);
 int					refresh				(void);
 int					wrefresh			(WINDOW *window);
@@ -98,21 +101,25 @@ inline BOOL			_clear_buffer		(HANDLE buffer,chtype input);
 //set the real cursor position to the position stored in the window
 BOOL				_cursor_sync		(WINDOW *window);			
 
-int LINES;
-int COLS;
 WINDOW *stdscr;
 
 WINDOW *
 initscr				(void)
 {
 	CONSOLE_SCREEN_BUFFER_INFO  console_info;
-	stdscr = (WINDOW *)malloc(sizeof(WINDOW));
-	if (!stdscr) 
-		exit(1);
 
 	if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info))
 		exit(1);
 
+	stdscr = newwin(
+		console_info.srWindow.Bottom - console_info.srWindow.Top + 1,
+		console_info.srWindow.Right - console_info.srWindow.Left + 1,
+		console_info.srWindow.Top,
+		console_info.srWindow.Left
+	);
+	if(!stdscr)
+		exit(1);
+	/*
 	_coord_s_init(
 		&(stdscr->_beg),
 		console_info.srWindow.Top,
@@ -134,18 +141,12 @@ initscr				(void)
 		console_info.srWindow.Right - (stdscr->_beg._x) + 1
 	);
 	
-	LINES				= stdscr->_size._y;
-	COLS				= stdscr->_size._x;
-
 	stdscr->_bkgd = ' ';
 
 	stdscr->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 
 	stdscr->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
 		GENERIC_READ | GENERIC_WRITE,
-		//I dont what the console share mode means, so set it to 0 to see if something wrong happens
-		//0,
-		//yes something wrong happens
 		FILE_SHARE_WRITE | FILE_SHARE_READ,
 		NULL,
 		CONSOLE_TEXTMODE_BUFFER,
@@ -179,6 +180,7 @@ initscr				(void)
 		exit(1);
 	_clear_buffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT], ' ');
 	_clear_buffer(stdscr->_swapbuffer[SWAPBUFFER_BACK], ' ');
+	*/
 
 	if(!SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]))
 		exit(1);
@@ -186,17 +188,106 @@ initscr				(void)
 	return stdscr;
 }
 
+WINDOW*
+newwin				(int nlines, int ncols, int begin_y, int begin_x)
+{
+	WINDOW *_tmp_window = (WINDOW *)malloc(sizeof(WINDOW));
+	if (_tmp_window == NULL)
+		return NULL;
+
+	_coord_s_init(
+		&_tmp_window->_beg,
+		begin_y,
+		begin_x
+	);
+	_coord_s_init(
+		&_tmp_window->_cur,
+		0,
+		0
+	);
+	_coord_s_init(
+		&_tmp_window->_size,
+		nlines,
+		ncols
+	);
+	_coord_s_init(
+		&_tmp_window->_par,
+		0,
+		0
+	);
+
+	_tmp_window->_bkgd = ' ';
+	_tmp_window->_parent = NULL;
+	_tmp_window->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+
+	_tmp_window->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_WRITE | FILE_SHARE_READ,
+		NULL,
+		CONSOLE_TEXTMODE_BUFFER,
+		NULL
+	);
+	_tmp_window->_swapbuffer[SWAPBUFFER_BACK] = CreateConsoleScreenBuffer(
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_WRITE | FILE_SHARE_READ,
+		NULL,
+		CONSOLE_TEXTMODE_BUFFER,
+		NULL
+	);
+
+	if (
+		_tmp_window->_swapbuffer[SWAPBUFFER_FRONT] == INVALID_HANDLE_VALUE
+		||
+		_tmp_window->_swapbuffer[SWAPBUFFER_BACK] == INVALID_HANDLE_VALUE
+		)
+		return NULL;
+
+	//The COORD is XY and the COORD_S IS yx so cannot be converted directly
+	if (
+			!SetConsoleScreenBufferSize (
+				_tmp_window->_swapbuffer[SWAPBUFFER_FRONT],
+				_coord_create(_tmp_window->_size._y, _tmp_window->_size._x)
+			)
+			||
+			!SetConsoleScreenBufferSize (
+				_tmp_window->_swapbuffer[SWAPBUFFER_BACK],
+				_coord_create(_tmp_window->_size._y, _tmp_window->_size._x)
+			)
+		)
+		return NULL;
+
+	_clear_buffer(_tmp_window->_swapbuffer[SWAPBUFFER_FRONT], ' ');
+	_clear_buffer(_tmp_window->_swapbuffer[SWAPBUFFER_BACK], ' ');
+
+	return _tmp_window;
+}
+
+int
+delwin				(WINDOW *window)
+{
+	SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
+	if (
+		!CloseHandle(window->_swapbuffer[SWAPBUFFER_FRONT])
+		||
+		!CloseHandle(window->_swapbuffer[SWAPBUFFER_BACK])
+		)
+		return ERR;
+	free(window);
+	return OK;
+}
+
+int
+mvwin				(WINDOW *window, int y, int x)
+{
+	window->_beg._y = y;
+	window->_beg._x = x;
+	return OK;
+}
+
 int 
 endwin				(void)
 {
-	SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
-	if(
-		!CloseHandle(stdscr->_swapbuffer[SWAPBUFFER_FRONT])
-		||
-		!CloseHandle(stdscr->_swapbuffer[SWAPBUFFER_BACK])
-		)
-		return ERR;
-	free(stdscr);
+	delwin(stdscr);
 	return OK;
 }
 
@@ -1010,7 +1101,9 @@ mvwdelch			(WINDOW *window, int y, int x)
 
 
 
-//-------------------private
+
+
+//-------------------private functions
 inline	COORD
 _coord_create		(short y, short x)
 {
@@ -1069,4 +1162,5 @@ _cursor_sync		(WINDOW *window)
 {
 	if(!SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create(window->_cur._y, window->_cur._x)))
 		return ERR;
+	return OK;
 }
