@@ -96,6 +96,8 @@ int					init_pair			(short pair, short f, short b);
 int					init_color			(short color, short r, short g, short b);
 int					color_content		(short color, short *r, short *g, short *b);
 int					pair_content		(short pair, short *f, short *b);
+int					echo				(void);
+int					noecho				(void);
 
 
 
@@ -117,6 +119,7 @@ int			COLOR_PAIRS;
 
 //private vars
 bool		_can_change_color;
+bool		_echo;
 int			*_colors;
 long long	*_color_pairs;
 
@@ -239,6 +242,8 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 	_tmp_window->_bkgd = ' ';
 	_tmp_window->_parent = NULL;
 	_tmp_window->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+	_tmp_window->_delay = TRUE;
+	_tmp_window->_clear = FALSE;
 
 	_tmp_window->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
 		GENERIC_READ | GENERIC_WRITE,
@@ -914,24 +919,36 @@ getch				(void)
 int
 wgetch				(WINDOW *window)
 {
-	refresh();
+	if(wrefresh(window) == ERR)
+		return ERR;
 
 	INPUT_RECORD _tmp_input_record;
-	DWORD _read_events;
+	DWORD _read_events, _unread_events;
 	do{
-		if (
-			!ReadConsoleInput(
+		if (window->_delay == FALSE){
+			if (!GetNumberOfConsoleInputEvents(
+				GetStdHandle(STD_INPUT_HANDLE),
+				&_unread_events))
+				return ERR;
+			if (!_unread_events)
+				return ERR;
+		}
+
+		if ( !ReadConsoleInput(
 			GetStdHandle(STD_INPUT_HANDLE),
 			&_tmp_input_record,
 			1, 
-			&_read_events)
-		)
+			&_read_events))
 			return ERR;
-	} while (
-		_tmp_input_record.EventType != KEY_EVENT 
+	} while ( _tmp_input_record.EventType != KEY_EVENT 
 		||
-		_tmp_input_record.Event.KeyEvent.bKeyDown == FALSE
-		);
+		_tmp_input_record.Event.KeyEvent.bKeyDown == FALSE );
+
+	if (_echo)	
+		waddch(window, _tmp_input_record.Event.KeyEvent.uChar.AsciiChar);
+
+	if(wrefresh(window) == ERR)
+		return ERR;
 
 	return _tmp_input_record.Event.KeyEvent.uChar.AsciiChar;
 }
@@ -1161,7 +1178,7 @@ init_pair			(short pair, short f, short b)
 		return ERR;
 
 	//The lower 32 bits if background and the higher is foreground
-	_color_pairs[pair] = _colors[b] | (_colors[f] << 32);
+	_color_pairs[pair] = _colors[b] | ((long long)_colors[f] << 32);
 
 	return OK;
 }
@@ -1220,6 +1237,20 @@ pair_content		(short pair, short *f, short *b)
 	return OK;
 }
 
+int
+echo				(void)
+{
+	_echo = TRUE;
+	return OK;
+}
+
+int
+noecho				(void)
+{
+	_echo = FALSE;
+	return OK;
+}
+
 
 
 
@@ -1236,6 +1267,7 @@ inline	void
 _private_var_reset	(void)
 {
 	_can_change_color	= FALSE;
+	_echo				= TRUE;
 	_colors				= NULL;
 	_color_pairs		= NULL;
 }

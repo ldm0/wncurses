@@ -54,20 +54,23 @@ struct _window_st{
 
 	chtype		_bkgd;
 
+	bool		_delay;
+
+	bool		_clear;			/* consider all data in the window invalid? */
+
     //the former is the front buffer
 	HANDLE		_swapbuffer[2];
 
     /* option values set by user */
-	bool		_notimeout;		/* no time out on function-key entry? */
-	bool		_clear;			/* consider all data in the window invalid? */
-	bool		_leaveok;		/* OK to not reset cursor on exit? */
-	bool		_scroll;		/* OK to scroll this window? */
-	bool		_idlok;			/* OK to use insert/delete line? */
-	bool		_idcok;			/* OK to use insert/delete char? */
-	bool		_sync;			/* window in sync mode? */
-	bool		_use_keypad;	/* process function keys into KEY_ symbols? */
+	//bool		_notimeout;		/* no time out on function-key entry? */
+	//bool		_leaveok;		/* OK to not reset cursor on exit? */
+	//bool		_scroll;		/* OK to scroll this window? */
+	//bool		_idlok;			/* OK to use insert/delete line? */
+	//bool		_idcok;			/* OK to use insert/delete char? */
+	//bool		_sync;			/* window in sync mode? */
+	//bool		_use_keypad;	/* process function keys into KEY_ symbols? */
 	//bool		_immed;			/* window in immed mode? (not yet used) */
-	int			 _delay;	        /* 0 = nodelay, <0 = blocking, >0 = delay */
+	//int		_delay;		/* 0 = nodelay, <0 = blocking, >0 = delay */
 };
 
 /*
@@ -110,7 +113,7 @@ extern	int		mvwaddchnstr	(WINDOW *, int, int, const chtype *, int);
 extern	int		printw			(const char*,...);
 extern	int		mvprintw		(int, int, const char*,...);
 extern	int		wprintw			(WINDOW *, const char*,...);
-extern	int		mvwprintw		(int, int, WINDOW *, const char*,...);
+extern	int		mvwprintw		(WINDOW *, int, int, const char*,...);
 extern	int		baudrate		(void);
 extern	int		beep			(void);
 extern	int		bkgd			(chtype);
@@ -172,5 +175,7 @@ extern	int		init_pair		(short, short, short);
 extern	int		init_color		(short, short, short, short);
 extern	int		color_content	(short, short *, short *, short *);
 extern	int		pair_content	(short, short *, short *);
+extern	int		echo			(void);
+extern	int		noecho			(void);
 
 #endif
