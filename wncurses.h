@@ -118,7 +118,6 @@ extern	int		border			(chtype, chtype, chtype, chtype, chtype, chtype, chtype, ch
 extern	int		wborder			(WINDOW *, chtype, chtype, chtype, chtype, chtype, chtype, chtype, chtype);
 extern	int		box				(WINDOW *, chtype, chtype);
 extern	int		flash			(void);
-extern	int		can_change_color(void);
 extern	int		hline			(chtype, int);
 extern	int		vline			(chtype, int);
 extern	int		whline			(WINDOW *, chtype, int);
@@ -160,8 +159,15 @@ extern	int		getparx			(const WINDOW *);
 extern	int		getpary			(const WINDOW *);
 extern	chtype	getbkgd			(WINDOW *);
 extern	int		delch			(void);
-extern	int		wdelch			(WINDOW *window);
-extern	int		mvdelch			(int y, int x);
-extern	int		mvwdelch		(WINDOW *window, int y, int x);
+extern	int		wdelch			(WINDOW *);
+extern	int		mvdelch			(int, int);
+extern	int		mvwdelch		(WINDOW *, int, int);
+extern	int		start_color		(void);
+extern	bool	has_colors		(void);
+extern	bool	can_change_color(void);
+extern	int		color_content	(short, short *, short *, short *);
+extern	int		pair_content	(short, short *, short *);
+extern	int		init_pair		(short, short, short);
+extern	int		init_color		(short, short, short, short);
 
 #endif

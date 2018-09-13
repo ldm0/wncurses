@@ -47,7 +47,6 @@ int					border				(chtype ls,chtype rs,chtype ts,chtype bs,chtype tl,chtype tr,c
 int					wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
 int					box					(WINDOW *window, chtype verch, chtype horch);
 int					flash				(void);
-int					can_change_color	(void);
 int					hline				(chtype ch, int n);
 int					vline				(chtype ch, int n);
 int					whline				(WINDOW*,chtype ch, int n);
@@ -90,18 +89,31 @@ int					delch				(void);
 int					wdelch				(WINDOW *window);
 int					mvdelch				(int y, int x);
 int					mvwdelch			(WINDOW *window, int y, int x);
+int					start_color			(void);
+bool				has_colors			(void);
+bool				can_change_color	(void);
+int					color_content		(short color, short *r, short *g, short *b);
+int					pair_content		(short pair, short *f, short *b);
+int					init_pair			(short pair, short f, short b);
+int					init_color			(short color, short r, short g, short b);
 
 
 
 //-------------------private functions
-inline COORD		_coord_create		(short y, short x);
-inline void			_coord_s_init		(COORD_S *coord_s, short y, short x);
-inline void			_swapbuffer_swap	(HANDLE *a, HANDLE *b);
-inline BOOL			_clear_buffer		(HANDLE buffer,chtype input);
+inline	COORD		_coord_create		(short y, short x);
+inline	void		_coord_s_init		(COORD_S *coord_s, short y, short x);
+inline	void		_swapbuffer_swap	(HANDLE *a, HANDLE *b);
+inline	BOOL		_clear_buffer		(HANDLE buffer,chtype input);
 //set the real cursor position to the position stored in the window
-BOOL				_cursor_sync		(WINDOW *window);			
+inline	BOOL		_cursor_sync		(WINDOW *window);			
 
-WINDOW *stdscr;
+//public vars
+WINDOW		*stdscr;
+int			COLORS;	
+int			COLOR_PAIRS;
+
+//private vars
+bool		_can_change_color;
 
 WINDOW *
 initscr				(void)
@@ -184,6 +196,8 @@ initscr				(void)
 
 	if(!SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]))
 		exit(1);
+
+	_can_change_color = FALSE;
 
 	return stdscr;
 }
@@ -347,7 +361,7 @@ addch				(chtype input)
 }
 
 int
-waddch				(WINDOW* window,chtype input)
+waddch				(WINDOW* window, chtype input)
 {
 	CHAR_INFO _input_ch;
 	_input_ch.Char.AsciiChar = input;
@@ -406,13 +420,13 @@ waddch				(WINDOW *window,chtype input)
 
 //finally I will make it MACRO
 int
-mvaddch				(int y,int x,chtype input)
+mvaddch				(int y, int x, chtype input)
 {
 	return mvwaddch(stdscr,y,x,input);
 }
 
 int
-mvwaddch			(WINDOW *window,int y,int x,chtype input)
+mvwaddch			(WINDOW *window, int y, int x, chtype input)
 {
 	wmove(window,y,x);
 	return waddch(window,input);
@@ -425,7 +439,7 @@ addstr				(const char *input)
 }
 
 int
-addnstr				(const char *input,int n)
+addnstr				(const char *input, int n)
 {
 	return waddnstr(stdscr,input,n);
 }
@@ -463,19 +477,19 @@ waddnstr			(WINDOW *window, const char *input, int n)
 }
 
 int
-mvaddstr			(int y,int x,const char *input)
+mvaddstr			(int y, int x, const char *input)
 {
 	return mvwaddstr(stdscr, y, x, input);
 }
 
 int
-mvaddnstr			(int y,int x,const char *input,int n)
+mvaddnstr			(int y, int x, const char *input, int n)
 {
 	return mvwaddnstr(stdscr, y, x, input, n);
 }
 
 int
-mvwaddstr			(WINDOW *window,int y,int x,const char *input)
+mvwaddstr			(WINDOW *window, int y, int x, const char *input)
 {
 	return mvwaddnstr(window, y, x, input, -1);
 }
@@ -708,13 +722,6 @@ flash				(void)
 	Sleep(100);
 	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
 	CloseHandle(_white_console_buffer);
-	return OK;
-}
-
-int
-can_change_color	(void)
-{
-	//can definitely change color definition
 	return OK;
 }
 
@@ -1099,6 +1106,45 @@ mvwdelch			(WINDOW *window, int y, int x)
 	return wdelch(window);
 }
 
+int
+start_color			(void)
+{
+	_can_change_color = TRUE;
+	//Allocate colors
+
+	return OK;
+}
+
+bool
+has_colors			(void)
+{
+	//The windows terminal definetely has the color
+	return TRUE; 
+}
+
+bool
+can_change_color	(void)
+{
+	return _can_change_color;
+}
+
+int
+init_pair			(short pair, short f, short b)
+{
+	
+}
+
+int
+color_content		(short color, short *r, short *g, short *b)
+{
+	
+}
+
+int
+pair_content		(short pair, short *f, short *b)
+{
+
+}
 
 
 
@@ -1123,7 +1169,7 @@ _coord_s_create		(short y, short x)
 }
 
 inline	void
-_coord_s_init		(COORD_S *coord_s,short y,short x)
+_coord_s_init		(COORD_S *coord_s, short y, short x)
 {
 	coord_s->_y = y;
 	coord_s->_x = x;
