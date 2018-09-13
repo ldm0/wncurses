@@ -100,6 +100,8 @@ int					init_color			(short color, short r, short g, short b);
 
 
 //-------------------private functions
+inline	void		_public_var_reset	(void);
+inline	void		_private_var_reset	(void);
 inline	COORD		_coord_create		(short y, short x);
 inline	void		_coord_s_init		(COORD_S *coord_s, short y, short x);
 inline	void		_swapbuffer_swap	(HANDLE *a, HANDLE *b);
@@ -109,15 +111,18 @@ inline	BOOL		_cursor_sync		(WINDOW *window);
 
 //public vars
 WINDOW		*stdscr;
-int			COLORS;	
+int			COLORS;
 int			COLOR_PAIRS;
 
 //private vars
-bool		_can_change_color;
+bool		_can_change_color	= FALSE;
 
 WINDOW *
 initscr				(void)
 {
+	_public_var_reset();
+	_private_var_reset();
+
 	CONSOLE_SCREEN_BUFFER_INFO  console_info;
 
 	if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info))
@@ -196,8 +201,6 @@ initscr				(void)
 
 	if(!SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]))
 		exit(1);
-
-	_can_change_color = FALSE;
 
 	return stdscr;
 }
@@ -302,6 +305,10 @@ int
 endwin				(void)
 {
 	delwin(stdscr);
+
+	_public_var_reset();
+	_private_var_reset();
+
 	return OK;
 }
 
@@ -1110,7 +1117,11 @@ int
 start_color			(void)
 {
 	_can_change_color = TRUE;
-	//Allocate colors
+
+	//The Windows console only provide 3 bits for colors
+	//So there are 8 colors and 8x8 color pairs
+	COLORS			= 8;
+	COLOR_PAIRS		= 64;
 
 	return OK;
 }
@@ -1150,6 +1161,20 @@ pair_content		(short pair, short *f, short *b)
 
 
 //-------------------private functions
+inline	void
+_public_var_reset	(void)
+{
+	stdscr = NULL;
+	COLORS = 0;
+	COLOR_PAIRS = 0;
+}
+
+inline	void
+_private_var_reset	(void)
+{
+	_can_change_color = FALSE;
+}
+
 inline	COORD
 _coord_create		(short y, short x)
 {

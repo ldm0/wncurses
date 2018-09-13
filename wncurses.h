@@ -16,14 +16,15 @@
 #define ACS_BLCORNER
 #define ACS_BRCORNER
 
+//The Windows console only provide 3 bits for colors
+#define COLOR_RED			FOREGROUND_RED
+#define COLOR_GREEN			FOREGROUND_GREEN
+#define COLOR_BLUE			FOREGROUND_BLUE
+#define COLOR_YELLOW		(FOREGROUND_RED | FOREGROUND_GREEN)
+#define COLOR_MAGENTA		(FOREGROUND_BLUE | FOREGROUND_RED)
+#define COLOR_CYAN			(FOREGROUND_GREEN | FOREGROUND_BLUE)
 #define COLOR_BLACK			0
-#define COLOR_RED			1
-#define COLOR_GREEN			2
-#define COLOR_YELLOW		3
-#define COLOR_BLUE			4
-#define COLOR_MAGENTA		5
-#define COLOR_CYAN			6
-#define COLOR_WHITE			7
+#define COLOR_WHITE			(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
@@ -74,6 +75,8 @@ extern	int		COLS;
 extern	int		LINES;
 */
 extern  WINDOW  *stdscr;
+extern	int		COLORS;
+extern	int		COLOR_PAIRS;
 
 extern  WINDOW*	initscr			(void);
 extern	WINDOW* newwin			(int, int, int, int);

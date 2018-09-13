@@ -13,3 +13,5 @@ If this is built up, It will be fairly easy to transfer some linux applications 
 So I decided to build it(hopeully don't mess up). (18/8/23)
 
 The problems are way more than I thought. (18/9/11)
+
+The Windows console only provides 3 bits to constrol the color, which means there are only 8 colors.
