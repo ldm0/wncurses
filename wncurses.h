@@ -17,14 +17,14 @@
 #define ACS_BRCORNER
 
 //The Windows console only provide 3 bits for colors
-#define COLOR_RED			FOREGROUND_RED
-#define COLOR_GREEN			FOREGROUND_GREEN
-#define COLOR_BLUE			FOREGROUND_BLUE
-#define COLOR_YELLOW		(FOREGROUND_RED | FOREGROUND_GREEN)
-#define COLOR_MAGENTA		(FOREGROUND_BLUE | FOREGROUND_RED)
-#define COLOR_CYAN			(FOREGROUND_GREEN | FOREGROUND_BLUE)
-#define COLOR_BLACK			0
-#define COLOR_WHITE			(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define _COLOR_RED			FOREGROUND_RED
+#define _COLOR_GREEN		FOREGROUND_GREEN
+#define _COLOR_BLUE			FOREGROUND_BLUE
+#define _COLOR_YELLOW		(FOREGROUND_RED | FOREGROUND_GREEN)
+#define _COLOR_MAGENTA		(FOREGROUND_BLUE | FOREGROUND_RED)
+#define _COLOR_CYAN			(FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define _COLOR_BLACK		0
+#define _COLOR_WHITE		(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
@@ -168,9 +168,9 @@ extern	int		mvwdelch		(WINDOW *, int, int);
 extern	int		start_color		(void);
 extern	bool	has_colors		(void);
 extern	bool	can_change_color(void);
-extern	int		color_content	(short, short *, short *, short *);
-extern	int		pair_content	(short, short *, short *);
 extern	int		init_pair		(short, short, short);
 extern	int		init_color		(short, short, short, short);
+extern	int		color_content	(short, short *, short *, short *);
+extern	int		pair_content	(short, short *, short *);
 
 #endif

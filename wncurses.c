@@ -92,10 +92,10 @@ int					mvwdelch			(WINDOW *window, int y, int x);
 int					start_color			(void);
 bool				has_colors			(void);
 bool				can_change_color	(void);
-int					color_content		(short color, short *r, short *g, short *b);
-int					pair_content		(short pair, short *f, short *b);
 int					init_pair			(short pair, short f, short b);
 int					init_color			(short color, short r, short g, short b);
+int					color_content		(short color, short *r, short *g, short *b);
+int					pair_content		(short pair, short *f, short *b);
 
 
 
@@ -108,6 +108,7 @@ inline	void		_swapbuffer_swap	(HANDLE *a, HANDLE *b);
 inline	BOOL		_clear_buffer		(HANDLE buffer,chtype input);
 //set the real cursor position to the position stored in the window
 inline	BOOL		_cursor_sync		(WINDOW *window);			
+inline	short		_find_color			(int color);
 
 //public vars
 WINDOW		*stdscr;
@@ -115,7 +116,9 @@ int			COLORS;
 int			COLOR_PAIRS;
 
 //private vars
-bool		_can_change_color	= FALSE;
+bool		_can_change_color;
+int			*_colors;
+long long	*_color_pairs;
 
 WINDOW *
 initscr				(void)
@@ -1111,17 +1114,23 @@ mvwdelch			(WINDOW *window, int y, int x)
 	if (!wmove(window, y, x))
 		return ERR;
 	return wdelch(window);
-}
+} 
 
 int
 start_color			(void)
 {
-	_can_change_color = TRUE;
+	_can_change_color	= TRUE;
 
 	//The Windows console only provide 3 bits for colors
 	//So there are 8 colors and 8x8 color pairs
-	COLORS			= 8;
-	COLOR_PAIRS		= 64;
+	COLORS				= 8;
+	COLOR_PAIRS			= 64;
+
+	_colors				= (int *)calloc(COLORS, sizeof(int));
+	_color_pairs		= (long long *)calloc(COLOR_PAIRS, sizeof(long long));
+
+	if (!_colors || !_color_pairs)
+		return ERR;
 
 	return OK;
 }
@@ -1142,19 +1151,73 @@ can_change_color	(void)
 int
 init_pair			(short pair, short f, short b)
 {
-	
+	if (pair < 0 || pair >= COLOR_PAIRS)
+		return ERR;
+	if(
+		f < 0 || b < 0
+		||
+		f >= COLORS || b >= COLORS
+		)
+		return ERR;
+
+	//The lower 32 bits if background and the higher is foreground
+	_color_pairs[pair] = _colors[b] | (_colors[f] << 32);
+
+	return OK;
+}
+
+int
+init_color			(short color, short r, short g, short b)
+{
+	//clip
+	if (
+		r < 0 || g < 0 || b < 0 
+		||
+		r > 1000 || g > 1000 || b > 1000
+		)
+		return ERR;
+
+	//Leaving two bit unused
+	_colors[color] = r;
+	_colors[color] <<= 4;
+	_colors[color] |= g;
+	_colors[color] <<= 4;
+	_colors[color] |= b;
+	_colors[color] <<= 4;
+
+	/*
+	the range of r,g,b is 0~1000 so Ichoose 100 as the boundary 
+	_colors[color] = 
+		(r < 100 ? 0 : FOREGROUND_RED)
+		| 
+		(g < 100 ? 0 : FOREGROUND_GREEN)
+		|
+		(b < 100 ? 0 : FOREGROUND_BLUE);
+	*/
+
+	return OK;
 }
 
 int
 color_content		(short color, short *r, short *g, short *b)
 {
-	
+	*r = (_colors[color] & (0x000003ff << 20)) >> 20;
+	*g = (_colors[color] & (0x000003ff << 10)) >> 10;
+	*b = _colors[color] & 0x000003ff;
+	return OK;
 }
 
 int
 pair_content		(short pair, short *f, short *b)
 {
-
+	short _tmp;
+	_tmp = _find_color((_color_pairs[pair] & 0xffffffff00000000) >> 32);
+	if (_tmp == -1) return ERR;
+	*f = _tmp;
+	_tmp = _find_color(_color_pairs[pair] & 0x00000000ffffffff);
+	if (_tmp == -1) return ERR;
+	*b = _tmp;
+	return OK;
 }
 
 
@@ -1164,15 +1227,17 @@ pair_content		(short pair, short *f, short *b)
 inline	void
 _public_var_reset	(void)
 {
-	stdscr = NULL;
-	COLORS = 0;
-	COLOR_PAIRS = 0;
+	stdscr				= NULL;
+	COLORS				= 0;
+	COLOR_PAIRS			= 0;
 }
 
 inline	void
 _private_var_reset	(void)
 {
-	_can_change_color = FALSE;
+	_can_change_color	= FALSE;
+	_colors				= NULL;
+	_color_pairs		= NULL;
 }
 
 inline	COORD
@@ -1229,9 +1294,23 @@ _clear_buffer		(HANDLE buffer, chtype input)
 }
 
 inline	BOOL
-_cursor_sync		(WINDOW *window)
+_cursor_sync		(WINDOW *window) 
 {
 	if(!SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create(window->_cur._y, window->_cur._x)))
 		return ERR;
+
 	return OK;
 }
+
+inline short
+_find_color			(int color)
+{
+	if(!_can_change_color)
+		return -1;
+	for (int i = 0; i < COLORS; ++i)
+		if(_colors[i] == color)
+			return i;
+	return -1;
+}
+
+
