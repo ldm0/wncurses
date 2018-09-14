@@ -9,12 +9,13 @@
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
 
-#define ACS_VLINE
-#define ACS_HLINE
-#define ACS_ULCORNER
-#define ACS_URCORNER
-#define ACS_BLCORNER
-#define ACS_BRCORNER
+#define ACS_VLINE			'*'
+#define ACS_HLINE			'*'
+#define ACS_ULCORNER		'©°'
+#define ACS_URCORNER		'©´'
+#define ACS_BLCORNER		'©¸'
+#define ACS_BRCORNER		'©¼'
+
 
 //The Windows console only provide 3 bits for colors
 #define _COLOR_RED			FOREGROUND_RED
@@ -33,7 +34,7 @@
 #define COLS	(stdscr->_size._x)
 
 typedef int						bool;
-typedef	char					chtype;
+typedef	unsigned				chtype;
 //coord short
 typedef struct	_coord_s_st		COORD_S;
 typedef struct	_window_st		WINDOW;

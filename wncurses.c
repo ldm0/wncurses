@@ -384,7 +384,6 @@ int
 waddch				(WINDOW* window, chtype input)
 {
 	CHAR_INFO _input_ch;
-	_input_ch.Char.AsciiChar = input;
 	_input_ch.Char.UnicodeChar = input;
 	_input_ch.Attributes = window->_cur_color;
 
@@ -422,6 +421,7 @@ waddch				(WINDOW* window, chtype input)
 	}
 	return OK;
 }
+
 /*
 The main fucking problem why I can't use this covinient function is
 the WriteConsole function writes things after the actual cursor position
@@ -485,10 +485,11 @@ waddnstr			(WINDOW *window,const char *input,int n)
 int
 waddnstr			(WINDOW *window, const char *input, int n)
 {
-	if (n == -1)
+	if (n == -1){
 		for (int i = 0; input[i]; ++i)
 			if (waddch(window, input[i]) == ERR)
 				return ERR;
+	}
 	else
 		for (int i = 0; i < n && input[i]; ++i)
 			if (waddch(window, input[i]) == ERR)
@@ -558,7 +559,16 @@ waddchstr			(WINDOW *window, const chtype *chstr)
 int					
 waddchnstr			(WINDOW *window, const chtype *chstr, int n)
 {
-	return waddnstr(window, chstr, n);
+	if (n == -1) {
+		for (int i = 0; chstr[i]; ++i)
+			if (waddch(window, chstr[i]) == ERR)
+				return ERR;
+	}
+	else
+		for (int i = 0; i < n && chstr[i]; ++i)
+			if (waddch(window, chstr[i]) == ERR)
+				return ERR;
+	return OK;
 }
 
 int
@@ -640,8 +650,7 @@ wbkgd				(WINDOW *window, chtype input)
 
 	//change chars
 	for(int i=0;i<_tmp_data_length;++i)
-		if (_tmp_data[i].Char.AsciiChar == window->_bkgd){
-			_tmp_data[i].Char.AsciiChar = input;
+		if (_tmp_data[i].Char.UnicodeChar == window->_bkgd){
 			_tmp_data[i].Char.UnicodeChar = input;
 		}
 
@@ -670,6 +679,7 @@ bkgdset				(const chtype input)
 	wbkgdset(stdscr, input);
 }
 
+
 void
 wbkgdset			(WINDOW *window, const chtype input)
 {
@@ -696,6 +706,23 @@ br - bottom right-hand corner.
 int
 wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
+	if(!ls)
+		ls = ACS_VLINE;
+	if(!rs)
+		rs = ACS_VLINE;
+	if(!ts)
+		ts = ACS_HLINE;
+	if(!bs)
+		bs = ACS_HLINE;
+	if(!tl)
+		tl = ACS_ULCORNER;
+	if(!tr)
+		tr = ACS_URCORNER;
+	if(!bl)
+		bl = ACS_BLCORNER;
+	if(!br)
+		br = ACS_BRCORNER;
+
 	COORD_S _tmp_cur_pos = window->_cur;
 	//top line
 	wmove(window, 0, 0);
