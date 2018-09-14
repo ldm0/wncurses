@@ -298,6 +298,9 @@ delwin				(WINDOW *window)
 		)
 		return ERR;
 	free(window);
+
+	window = NULL;
+
 	return OK;
 }
 
@@ -365,6 +368,8 @@ wrefresh			(WINDOW *window)
 	);
 
 	free(_tmp_data);
+
+	_tmp_data = NULL;
 
 	return OK;
 }
@@ -651,6 +656,8 @@ wbkgd				(WINDOW *window, chtype input)
 	);
 
 	free(_tmp_data);
+
+	_tmp_data = NULL;
 
 	window->_bkgd = input;
 
@@ -1116,6 +1123,9 @@ wdelch				(WINDOW *window)
 		return ERR;
 
 	free(_tmp_str);
+
+	_tmp_str = NULL;
+
 	return OK;
 }
 
