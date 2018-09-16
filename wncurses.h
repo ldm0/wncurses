@@ -1,6 +1,9 @@
 ﻿#ifndef __WNCURSES_H
 #define __WNCURSES_H
 
+#include<Windows.h>
+#include<stdio.h>
+
 #define TRUE 1
 #define FALSE 0
 #define OK 1
@@ -112,9 +115,9 @@ extern	int		mvaddchnstr		(int, int, const chtype *, int);
 extern	int		mvwaddchstr		(WINDOW *, int, int, const chtype *);
 extern	int		mvwaddchnstr	(WINDOW *, int, int, const chtype *, int);
 extern	int		printw			(const char*,...);
-extern	int		mvprintw		(int, int, const char*,...);
-extern	int		wprintw			(WINDOW *, const char*,...);
-extern	int		mvwprintw		(WINDOW *, int, int, const char*,...);
+extern	int		mvprintw		(int, int, const char *,...);
+extern	int		wprintw			(WINDOW *, const char *,...);
+extern	int		mvwprintw		(WINDOW *, int, int, const char *,...);
 extern	int		baudrate		(void);
 extern	int		beep			(void);
 extern	int		bkgd			(chtype);

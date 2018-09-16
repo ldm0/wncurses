@@ -32,10 +32,9 @@ int					mvaddchstr			(int y, int x, const chtype *chstr);
 int					mvaddchnstr			(int y, int x, const chtype *chstr, int n);
 int					mvwaddchstr			(WINDOW *window, int y, int x, const chtype *chstr);
 int					mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n);
-//the printw cannot convert directly due to the va_list
 int					printw				(const char *input,...);
 int					mvprintw			(int y,int x,const char *input,...);
-int					wprintw				(WINDOW *window, const char*,...);
+int					wprintw				(WINDOW *window, const char *input,...);
 int					mvwprintw			(WINDOW *window, int y,int x,const char *input,...);
 int					baudrate			(void);
 int					beep				(void);
@@ -111,6 +110,7 @@ inline	BOOL		_clear_buffer		(HANDLE buffer,chtype input);
 //set the real cursor position to the position stored in the window
 inline	BOOL		_cursor_sync		(WINDOW *window);			
 inline	short		_find_color			(int color);
+int					_va_wprintw			(WINDOW *window, const char *input, va_list args);
 
 //public vars
 WINDOW		*stdscr;
@@ -597,6 +597,48 @@ mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n)
 	if (wmove(window, y, x) == ERR)
 		return ERR;
 	return waddchnstr(window,chstr,n);
+}
+
+int
+printw				(const char *input,...)
+{
+	va_list _args;
+	va_start(_args, input);
+	int _result = va_wprintw(stdscr, input, _args);
+	va_end(_args);
+	return _result;
+}
+
+int
+mvprintw			(int y,int x,const char *input,...)
+{
+	move(y, x);
+	va_list _args;
+	va_start(_args, input);
+	int _result = va_wprintw(stdscr, input, _args);
+	va_end(_args);
+	return _result;
+}
+
+int
+wprintw				(WINDOW *window, const char *input, ...)
+{
+	va_list _args;
+	va_start(_args, input);
+	int _result = va_wprintw(window, input, _args);
+	va_end(_args);
+	return _result;
+}
+
+int
+mvwprintw			(WINDOW *window, int y,int x,const char *input,...)
+{
+	wmove(window , y, x);
+	va_list _args;
+	va_start(_args, input);
+	int _result = va_wprintw(window, input, _args);
+	va_end(_args);
+	return _result;
 }
 
 int
@@ -1382,6 +1424,19 @@ _find_color			(int color)
 		if(_colors[i] == color)
 			return i;
 	return -1;
+}
+
+int
+_va_wprintw			(WINDOW *window, const char *input, va_list args)
+{
+	int _length = MIN(window->_size._x * window->_size._y, (strlen(input) + 1));
+	char *_buffer = (char *)malloc(_length * sizeof(char));
+	if (vsprintf_s(_buffer, _length, input, args) < 0)
+		return ERR;
+	if(!waddnstr(window, _buffer, _length))
+		return ERR;
+	free(_buffer);
+	return OK;
 }
 
 
