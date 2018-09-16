@@ -1,4 +1,4 @@
-#ifndef __WNCURSES_H
+Ôªø#ifndef __WNCURSES_H
 #define __WNCURSES_H
 
 #define TRUE 1
@@ -11,13 +11,13 @@
 
 #define ACS_VLINE			'*'
 #define ACS_HLINE			'*'
-#define ACS_ULCORNER		'©∞'
-#define ACS_URCORNER		'©¥'
-#define ACS_BLCORNER		'©∏'
-#define ACS_BRCORNER		'©º'
+#define ACS_ULCORNER		'‚îå'
+#define ACS_URCORNER		'‚îê'
+#define ACS_BLCORNER		'‚îî'
+#define ACS_BRCORNER		'‚îò'
 
 
-//The Windows console only provide 3 bits for colors
+//The Windows console only provides 3 bits for colors
 #define _COLOR_RED			FOREGROUND_RED
 #define _COLOR_GREEN		FOREGROUND_GREEN
 #define _COLOR_BLUE			FOREGROUND_BLUE

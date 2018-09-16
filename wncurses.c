@@ -129,6 +129,8 @@ initscr				(void)
 	_public_var_reset();
 	_private_var_reset();
 
+	SetConsoleCP(936);
+
 	CONSOLE_SCREEN_BUFFER_INFO  console_info;
 
 	if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info))
@@ -352,14 +354,14 @@ wrefresh			(WINDOW *window)
 		return ERR;
 
 	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x) - 1,(window->_beg._y) + (window->_size._y) - 1 };
-	ReadConsoleOutput(
+	ReadConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_FRONT], 
 		_tmp_data, 
 		_coord_create(window->_size._y,window->_size._x),
 		_coord_create(0,0),
 		&_reg
 	);
-	WriteConsoleOutput(
+	WriteConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_BACK], 
 		_tmp_data, 
 		_coord_create(window->_size._y,window->_size._x),
@@ -392,7 +394,7 @@ waddch				(WINDOW* window, chtype input)
 	SMALL_RECT _region = { 
 		window->_cur._x,
 		window->_cur._y,
-		window->_cur._x + (window->_size._x) - 1,
+		window->_cur._x + window->_size._x - 1,
 		window->_cur._y + window->_size._y - 1
 	};
 
@@ -405,7 +407,7 @@ waddch				(WINDOW* window, chtype input)
 	}
 	else {
 		if (
-			!WriteConsoleOutput(
+			!WriteConsoleOutputW(
 				window->_swapbuffer[SWAPBUFFER_BACK], 
 				&_input_ch, 
 				_size, 
@@ -640,7 +642,7 @@ wbkgd				(WINDOW *window, chtype input)
 
 	//get chars
 	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x),(window->_beg._y) + (window->_size._y) };
-	ReadConsoleOutput(
+	ReadConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_BACK], 
 		_tmp_data, 
 		_coord_create(window->_size._y,window->_size._x),
@@ -656,7 +658,7 @@ wbkgd				(WINDOW *window, chtype input)
 
 
 	//write chars
-	WriteConsoleOutput(
+	WriteConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_BACK], 
 		_tmp_data, 
 		_coord_create(window->_size._y,window->_size._x),
