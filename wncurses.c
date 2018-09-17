@@ -11,6 +11,8 @@ int					endwin				(void);
 bool				isendwin			(void);
 int					refresh				(void);
 int					wrefresh			(WINDOW *window);
+int					wnoutrefresh		(WINDOW *window);
+int					doupdate			(void);
 int					addch				(chtype input);
 int					waddch				(WINDOW *window, chtype input);
 int					mvaddch				(int y,int x,chtype input);
@@ -357,16 +359,27 @@ wrefresh			(WINDOW *window)
 	if(_cursor_sync(window)==ERR)
 		return ERR;
 
-	_swapbuffer_swap(&(window->_swapbuffer[SWAPBUFFER_FRONT]),&(window->_swapbuffer[SWAPBUFFER_BACK]));
+	_swapbuffer_swap(
+		&(window->_swapbuffer[SWAPBUFFER_FRONT]),
+		&(window->_swapbuffer[SWAPBUFFER_BACK]));
 
 	//This function call is essential
-	SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
+	SetConsoleActiveScreenBuffer(
+		stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
 
-	CHAR_INFO *_tmp_data = (CHAR_INFO*)malloc(sizeof(CHAR_INFO)*window->_size._x*window->_size._y);
-	if(_tmp_data==NULL)
+	CHAR_INFO *_tmp_data = (CHAR_INFO *)malloc(
+		window->_size._x*window->_size._y
+		* sizeof(CHAR_INFO));
+	if(!_tmp_data)
 		return ERR;
 
-	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x) - 1,(window->_beg._y) + (window->_size._y) - 1 };
+	SMALL_RECT _reg = { 
+		window->_beg._x,
+		window->_beg._y,
+		window->_beg._x + window->_size._x - 1,
+		window->_beg._y + window->_size._y - 1 
+	};
+
 	ReadConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_FRONT], 
 		_tmp_data, 
@@ -387,6 +400,19 @@ wrefresh			(WINDOW *window)
 	_tmp_data = NULL;
 
 	return OK;
+}
+
+int
+wnoutrefresh		(WINDOW *window)
+{
+	//The implementation is different;
+	return OK;
+}
+
+int
+doupdate			(void)
+{
+	return refresh();
 }
 
 int
@@ -1192,7 +1218,6 @@ wdelch				(WINDOW *window)
 	if (_buffer == NULL)
 		return ERR;
 
-	DWORD _read_length;
 	if (
 		!ReadConsoleOutputW(
 			window->_swapbuffer[SWAPBUFFER_BACK],
@@ -1365,24 +1390,28 @@ wdeleteln			(WINDOW *window)
 	COORD _buffer_size = _coord_create(
 		window->_size._y - window->_cur._y,
 		window->_size._x);
+
 	SMALL_RECT _region = { 
 		window->_beg._x,
 		window->_beg._y + window->_cur._y + 1,
 		window->_beg._x + window->_size._x - 1,
-		window->_beg._y + window->_size._y - 1 };
+		window->_beg._y + window->_size._y - 1 
+	};
+
 	CHAR_INFO *_buffer = (CHAR_INFO *)malloc(
 		_buffer_size.Y * _buffer_size.X 
 		* sizeof(CHAR_INFO));
 	if(!_buffer)
 		return ERR;
-	DWORD _read_length;
+
 	if (!ReadConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_BACK],
 		_buffer,_buffer_size,
 		_coord_create(0,0),
 		&_region))
 		return ERR;
-	for(int i=0;i<window->_size._x;++i){
+
+	for (int i = 0; i < window->_size._x; ++i) {
 		//The attr will be replaced with window->_bkgd_attr in the future
 		_buffer[_buffer_size.X*(_buffer_size.Y - 1) + i].Attributes = 
 			FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
@@ -1463,7 +1492,26 @@ insdelln			(int n)
 int
 winsdelln			(WINDOW *window, int n)
 {
-	
+	if(!n)
+		return OK;
+		
+	//Basic clip.
+	n = MIN(window->_size._y, n);
+	n = MAX(-window->_size._y, n);
+
+	//KISS
+	//When I have time, I will optimize it.
+	if(n>0){
+		for(;n>0;--n)
+			if (!winsertln(window))
+				return ERR;
+	}
+	else
+		for(;n<0;++n)
+			if (!wdeleteln(window))
+				return ERR;
+
+	return OK;
 }
 
 
@@ -1546,7 +1594,6 @@ _cursor_sync		(WINDOW *window)
 {
 	if(!SetConsoleCursorPosition(window->_swapbuffer[SWAPBUFFER_BACK], _coord_create(window->_cur._y, window->_cur._x)))
 		return ERR;
-
 	return OK;
 }
 

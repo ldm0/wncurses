@@ -23,7 +23,7 @@ int clear (void);
 int clearok (WINDOW *,bool);
 int clrtobot (void);	
 int clrtoeol (void);
-int color_content (NCURSES_COLOR_T,NCURSES_COLOR_T*,NCURSES_COLOR_T*,NCURSES_COLOR_T*);	/* implemented */
+int color_content (NCURSES_COLOR_T,NCURSES_COLOR_T*,NCURSES_COLOR_T*,NCURSES_COLOR_T*);	
 int color_set (NCURSES_PAIRS_T,void*);			/* generated */
 int COLOR_PAIR (int);				/* generated */
 int copywin (const WINDOW*,WINDOW*,int,int,int,int,int,int,int);	/* implemented */
@@ -31,20 +31,20 @@ int curs_set (int);
 int def_prog_mode (void);			/* implemented */
 int def_shell_mode (void);			/* implemented */
 int delay_output (int);				/* implemented */
-int delch (void);				/* generated */
+int delch (void);
 void delscreen (SCREEN *);			/* implemented */
-int delwin (WINDOW *);				/* implemented */
-int deleteln (void);				/* generated */
+int delwin (WINDOW *);
+int deleteln (void);
 WINDOW* derwin (WINDOW *,int,int,int,int);	/* implemented */
-int doupdate (void);				/* implemented */
+int doupdate (void);
 WINDOW* dupwin (WINDOW *);			/* implemented */
-int echo (void);					/* implemented */
+int echo (void);
 int echochar (const chtype);			/* generated */
 int erase (void);				/* generated */
-int endwin (void);				/* implemented */
+int endwin (void);
 char erasechar (void);				/* implemented */
 void filter (void);				/* implemented */
-int flash (void);				/* implemented */
+int flash (void);
 int flushinp (void);				/* implemented */
 chtype getbkgd (WINDOW *);			/* generated */
 int getch (void);				/* generated */
