@@ -62,7 +62,7 @@ struct _window_st{
 
 	bool		_delay;
 
-	bool		_clear;			/* consider all data in the window invalid? */
+	//bool		_clear;			/* consider all data in the window invalid? */
 
     //the former is the front buffer
 	HANDLE		_swapbuffer[2];
@@ -94,9 +94,11 @@ extern	int		mvwin			(WINDOW *, int, int);
 extern	int		endwin			(void);
 extern	bool	isendwin		(void);
 extern	int		refresh			(void);
-extern	int		wrefresh		(WINDOW *);
+extern	int		wrefresh(WINDOW *);
 extern	int		wnoutrefresh	(WINDOW *);
 extern	int		doupdate		(void);
+extern	int		redrawwin		(WINDOW *);
+extern	int		wredrawwin		(WINDOW *, int, int);
 extern	int		addch			(chtype);
 extern	int		waddch			(WINDOW *, chtype);
 extern	int		mvaddch			(int, int, chtype);
@@ -192,5 +194,11 @@ extern	int		insertln		(void);
 extern	int		winsertln		(WINDOW *);
 extern	int		insdelln		(int);
 extern	int		winsdelln		(WINDOW *, int);
+extern	bool	has_ic			(void);
+extern	bool	has_il			(void);
+extern	char	erasechar		(void);
+extern	int		erasewchar		(wchar_t *);
+extern	int		putwin			(WINDOW *, FILE *);
+extern	WINDOW*	getwin			(FILE *);
 
 #endif

@@ -13,6 +13,8 @@ int					refresh				(void);
 int					wrefresh			(WINDOW *window);
 int					wnoutrefresh		(WINDOW *window);
 int					doupdate			(void);
+int					redrawwin			(WINDOW *window);
+int					wredrawwin			(WINDOW *window, int beg_line, int num_lines);
 int					addch				(chtype input);
 int					waddch				(WINDOW *window, chtype input);
 int					mvaddch				(int y,int x,chtype input);
@@ -106,6 +108,12 @@ int					insertln			(void);
 int					winsertln			(WINDOW *window);
 int					insdelln			(int n);
 int					winsdelln			(WINDOW *window, int n);
+bool				has_ic				(void);
+bool				has_il				(void);
+char				erasechar			(void);
+int					erasewchar			(wchar_t *ch);
+int					putwin				(WINDOW *win, FILE *filep);
+WINDOW *			getwin				(FILE *filep);
 
 
 
@@ -254,7 +262,7 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 	_tmp_window->_parent = NULL;
 	_tmp_window->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 	_tmp_window->_delay = TRUE;
-	_tmp_window->_clear = FALSE;
+	//_tmp_window->_clear = FALSE;		//not needed
 
 	_tmp_window->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
 		GENERIC_READ | GENERIC_WRITE,
@@ -413,6 +421,18 @@ int
 doupdate			(void)
 {
 	return refresh();
+}
+
+int
+redrawwin			(WINDOW *window)
+{
+	return wredrawwin(window, 0, window->_size._y);
+}
+
+int
+wredrawwin			(WINDOW *window, int beg_line, int num_lines)
+{
+	return wrefresh(window);
 }
 
 int
@@ -955,7 +975,7 @@ clear				(void)
 int
 wclear				(WINDOW *window)
 {
-	if(_clear_buffer(window->_swapbuffer[SWAPBUFFER_BACK], window->_bkgd)==FALSE)
+	if (!werase(window))
 		return ERR;
 	return clearok(window, TRUE);
 }
@@ -963,7 +983,8 @@ wclear				(WINDOW *window)
 int
 clearok				(WINDOW *window, bool n)
 {
-	window->_clear = n;
+	//not needed, this is windows, and the implementation is different
+	//window->_clear = n;		
 	return OK;
 }
 
@@ -976,7 +997,11 @@ erase				(void)
 int
 werase				(WINDOW *window)
 {
-	return wclear(window);
+	if (_clear_buffer(
+		window->_swapbuffer[SWAPBUFFER_BACK],
+		window->_bkgd) == FALSE)
+		return ERR;
+	return OK;
 }
 
 int
@@ -1272,6 +1297,8 @@ start_color			(void)
 	_colors				= (int *)calloc(COLORS, sizeof(int));
 	_color_pairs		= (long long *)calloc(COLOR_PAIRS, sizeof(long long));
 
+	for (int i = 0; i < 8; ++i)
+
 	if (!_colors || !_color_pairs)
 		return ERR;
 
@@ -1511,6 +1538,32 @@ winsdelln			(WINDOW *window, int n)
 			if (!wdeleteln(window))
 				return ERR;
 
+	return OK;
+}
+
+bool
+has_ic				(void)
+{
+	return TRUE;
+}
+
+bool
+has_il				(void)
+{
+	return TRUE;
+}
+
+char
+erasechar			(void)
+{
+	//backspace
+	return 0x8;
+}
+
+int
+erasewchar			(wchar_t *ch)
+{
+	*ch = 0x8;
 	return OK;
 }
 
