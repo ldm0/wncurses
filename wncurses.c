@@ -8,6 +8,7 @@ WINDOW*				newwin				(int nlines, int ncols, int begin_y, int begin_x);
 int					delwin				(WINDOW *window);
 int					mvwin				(WINDOW *window, int y, int x);
 int					endwin				(void);
+bool				isendwin			(void);
 int					refresh				(void);
 int					wrefresh			(WINDOW *window);
 int					addch				(chtype input);
@@ -97,6 +98,12 @@ int					color_content		(short color, short *r, short *g, short *b);
 int					pair_content		(short pair, short *f, short *b);
 int					echo				(void);
 int					noecho				(void);
+int					deleteln			(void);
+int					wdeleteln			(WINDOW *window);
+int					insertln			(void);
+int					winsertln			(WINDOW *window);
+int					insdelln			(int n);
+int					winsdelln			(WINDOW *window, int n);
 
 
 
@@ -110,7 +117,7 @@ inline	BOOL		_clear_buffer		(HANDLE buffer,chtype input);
 //set the real cursor position to the position stored in the window
 inline	BOOL		_cursor_sync		(WINDOW *window);			
 inline	short		_find_color			(int color);
-int					_va_wprintw			(WINDOW *window, const char *input, va_list args);
+int					_vwprintw			(WINDOW *window, const char *input, va_list args);
 
 //public vars
 WINDOW		*stdscr;
@@ -161,7 +168,7 @@ initscr				(void)
 		0
 	);
 	_coord_s_init(
-		&(stdscr->_size),
+		&(stdscr->_buffer_size),
 		console_info.srWindow.Bottom - (stdscr->_beg._y) + 1,
 		console_info.srWindow.Right - (stdscr->_beg._x) + 1
 	);
@@ -194,12 +201,12 @@ initscr				(void)
 	if (
 			!SetConsoleScreenBufferSize (
 				stdscr->_swapbuffer[SWAPBUFFER_FRONT],
-				_coord_create(stdscr->_size._y,stdscr->_size._x)
+				_coord_create(stdscr->_buffer_size._y,stdscr->_buffer_size._x)
 			)
 			||
 			!SetConsoleScreenBufferSize (
 				stdscr->_swapbuffer[SWAPBUFFER_BACK],
-				_coord_create(stdscr->_size._y,stdscr->_size._x)
+				_coord_create(stdscr->_buffer_size._y,stdscr->_buffer_size._x)
 			)
 		)
 		exit(1);
@@ -325,6 +332,12 @@ endwin				(void)
 	return OK;
 }
 
+bool
+isendwin			(void)
+{
+	return stdscr == NULL;
+}
+
 int 
 refresh				(void)
 {
@@ -409,7 +422,7 @@ waddch				(WINDOW* window, chtype input)
 		if (
 			!WriteConsoleOutputW(
 				window->_swapbuffer[SWAPBUFFER_BACK], 
-				&_input_ch, 
+				&_input_ch,
 				_size, 
 				_begin, 
 				&_region
@@ -600,22 +613,22 @@ mvwaddchnstr		(WINDOW *window, int y, int x, const chtype *chstr, int n)
 }
 
 int
-printw				(const char *input,...)
+printw				(const char *input, ...)
 {
 	va_list _args;
 	va_start(_args, input);
-	int _result = va_wprintw(stdscr, input, _args);
+	int _result = _vwprintw(stdscr, input, _args);
 	va_end(_args);
 	return _result;
 }
 
 int
-mvprintw			(int y,int x,const char *input,...)
+mvprintw			(int y, int x, const char *input, ...)
 {
 	move(y, x);
 	va_list _args;
 	va_start(_args, input);
-	int _result = va_wprintw(stdscr, input, _args);
+	int _result = _vwprintw(stdscr, input, _args);
 	va_end(_args);
 	return _result;
 }
@@ -625,18 +638,18 @@ wprintw				(WINDOW *window, const char *input, ...)
 {
 	va_list _args;
 	va_start(_args, input);
-	int _result = va_wprintw(window, input, _args);
+	int _result = _vwprintw(window, input, _args);
 	va_end(_args);
 	return _result;
 }
 
 int
-mvwprintw			(WINDOW *window, int y,int x,const char *input,...)
+mvwprintw			(WINDOW *window, int y, int x, const char *input, ...)
 {
 	wmove(window , y, x);
 	va_list _args;
 	va_start(_args, input);
-	int _result = va_wprintw(window, input, _args);
+	int _result = _vwprintw(window, input, _args);
 	va_end(_args);
 	return _result;
 }
@@ -722,7 +735,6 @@ bkgdset				(const chtype input)
 {
 	wbkgdset(stdscr, input);
 }
-
 
 void
 wbkgdset			(WINDOW *window, const chtype input)
@@ -870,8 +882,10 @@ wvline				(WINDOW *window, chtype ch, int n)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
 	for (int i = _tmp_cur_pos._y; i < MIN(_tmp_cur_pos._y + n - 1, window->_size._y); ++i)
-		mvwaddch(window, i, _tmp_cur_pos._x, ch);
-	wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
+		if (!mvwaddch(window, i, _tmp_cur_pos._x, ch))
+			return ERR;
+	if (!wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x))
+		return ERR;
 	return OK;
 }
 
@@ -1023,12 +1037,12 @@ wgetch				(WINDOW *window)
 		_tmp_input_record.Event.KeyEvent.bKeyDown == FALSE );
 
 	if (_echo)	
-		waddch(window, _tmp_input_record.Event.KeyEvent.uChar.AsciiChar);
+		waddch(window, _tmp_input_record.Event.KeyEvent.uChar.UnicodeChar);
 
 	if(wrefresh(window) == ERR)
 		return ERR;
 
-	return _tmp_input_record.Event.KeyEvent.uChar.AsciiChar;
+	return _tmp_input_record.Event.KeyEvent.uChar.UnicodeChar;
 }
 
 int
@@ -1168,34 +1182,40 @@ delch				(void)
 int
 wdelch				(WINDOW *window)
 {
+	COORD _buffer_size = _coord_create(1, window->_size._x - window->_cur._x);
+	SMALL_RECT _region = {
+		window->_beg._x + window->_cur._x + 1,
+		window->_beg._y + window->_cur._y,
+		window->_beg._x + window->_size._x - 1,
+		window->_beg._y + window->_cur._y};
+	CHAR_INFO *_buffer = (CHAR_INFO *)malloc(_buffer_size.X * sizeof(CHAR_INFO));
+	if (_buffer == NULL)
+		return ERR;
+
 	DWORD _read_length;
-
-	//The reason why the length is two char longer than the actual length is 
-	//we need a char to fullfill the end of this line and a char to place 0
-	char *_tmp_str = (char *)malloc((window->_size._x - window->_cur._x + 1) * sizeof(char));
-	if (_tmp_str == NULL)
-		return ERR;
-
 	if (
-		!ReadConsoleOutputCharacter(
+		!ReadConsoleOutputW(
 			window->_swapbuffer[SWAPBUFFER_BACK],
-			_tmp_str,
-			window->_size._x - window->_cur._x - 1,
-			_coord_create(window->_cur._y, window->_cur._x + 1),
-			&_read_length
-		)
-	)
+			_buffer,_buffer_size,
+			_coord_create(0,0),
+			&_region))
 		return ERR;
 
-	_tmp_str[window->_size._x - window->_cur._x - 1] = window->_bkgd;
-	_tmp_str[window->_size._x - window->_cur._x] = 0;
+	//the last cell of buffer is empty
+	_buffer[_buffer_size.X - 1].Char.UnicodeChar = window->_bkgd;
+	_buffer[_buffer_size.X - 1].Attributes = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
 
-	if (!waddstr(window, _tmp_str))
+	_region.Left -= 1;
+	if (!WriteConsoleOutputW(
+		window->_swapbuffer[SWAPBUFFER_BACK],
+		_buffer,_buffer_size,
+		_coord_create(0, 0),
+		&_region))
 		return ERR;
 
-	free(_tmp_str);
+	free(_buffer);
 
-	_tmp_str = NULL;
+	_buffer = NULL;
 
 	return OK;
 }
@@ -1332,6 +1352,121 @@ noecho				(void)
 	return OK;
 }
 
+int
+deleteln			(void)
+{
+	return wdeleteln(stdscr);
+}
+
+int
+wdeleteln			(WINDOW *window)
+{
+	//Unicode
+	COORD _buffer_size = _coord_create(
+		window->_size._y - window->_cur._y,
+		window->_size._x);
+	SMALL_RECT _region = { 
+		window->_beg._x,
+		window->_beg._y + window->_cur._y + 1,
+		window->_beg._x + window->_size._x - 1,
+		window->_beg._y + window->_size._y - 1 };
+	CHAR_INFO *_buffer = (CHAR_INFO *)malloc(
+		_buffer_size.Y * _buffer_size.X 
+		* sizeof(CHAR_INFO));
+	if(!_buffer)
+		return ERR;
+	DWORD _read_length;
+	if (!ReadConsoleOutputW(
+		window->_swapbuffer[SWAPBUFFER_BACK],
+		_buffer,_buffer_size,
+		_coord_create(0,0),
+		&_region))
+		return ERR;
+	for(int i=0;i<window->_size._x;++i){
+		//The attr will be replaced with window->_bkgd_attr in the future
+		_buffer[_buffer_size.X*(_buffer_size.Y - 1) + i].Attributes = 
+			FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+		_buffer[_buffer_size.X*(_buffer_size.Y - 1) + i].Char.UnicodeChar = 
+			window->_bkgd;
+	}
+
+	_region.Top -= 1;
+	if (!WriteConsoleOutputW(
+		window->_swapbuffer[SWAPBUFFER_BACK],
+		_buffer,_buffer_size,
+		_coord_create(0, 0),
+		&_region))
+		return ERR;
+	free(_buffer);
+	return OK;
+}
+
+int
+insertln			(void)
+{
+	return winsertln(stdscr);
+}
+
+int
+winsertln			(WINDOW *window)
+{
+	COORD _buffer_size = _coord_create(
+		window->_size._y - window->_cur._y,
+		window->_size._x);
+
+	SMALL_RECT _region = {
+		window->_beg._x,
+		window->_beg._y + window->_cur._y,
+		window->_beg._x + window->_size._x - 1,
+		window->_beg._y + window->_size._y - 2 
+	};
+
+	CHAR_INFO *_blank = (CHAR_INFO *)malloc(
+		_buffer_size.X * _buffer_size.Y 
+		* sizeof(CHAR_INFO));
+	if (!_blank)
+		return ERR;
+
+	for (int i = 0; i < _buffer_size.X; ++i){
+		_blank[i].Attributes=
+			FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+		_blank[i].Char.UnicodeChar=
+			window->_bkgd;
+	}
+
+	if (!ReadConsoleOutputW(
+		window->_swapbuffer[SWAPBUFFER_BACK],
+		_blank,_buffer_size,
+		_coord_create(1,0),
+		&_region))
+		return ERR;
+
+	_region.Bottom += 1;
+	if (!WriteConsoleOutputW(
+		window->_swapbuffer[SWAPBUFFER_BACK],
+		_blank,_buffer_size,
+		_coord_create(0, 0),
+		&_region))
+		return ERR;
+
+	free(_blank);
+
+	return OK;
+}
+
+int
+insdelln			(int n)
+{
+	return winsdelln(stdscr, n);
+}
+
+int
+winsdelln			(WINDOW *window, int n)
+{
+	
+}
+
+
 
 
 
@@ -1427,13 +1562,14 @@ _find_color			(int color)
 }
 
 int
-_va_wprintw			(WINDOW *window, const char *input, va_list args)
+_vwprintw			(WINDOW *window, const char *input, va_list args)
 {
-	int _length = MIN(window->_size._x * window->_size._y, (strlen(input) + 1));
-	char *_buffer = (char *)malloc(_length * sizeof(char));
-	if (vsprintf_s(_buffer, _length, input, args) < 0)
+	char *_buffer = (char *)malloc(window->_size._x * window->_size._y * sizeof(char));
+	if (!_buffer)
 		return ERR;
-	if(!waddnstr(window, _buffer, _length))
+	if (vsprintf_s(_buffer, window->_size._x * window->_size._y, input, args) < 0)
+		return ERR;
+	if (!waddstr(window, _buffer))
 		return ERR;
 	free(_buffer);
 	return OK;

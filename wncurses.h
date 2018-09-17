@@ -12,8 +12,8 @@
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
 
-#define ACS_VLINE			'*'
-#define ACS_HLINE			'*'
+#define ACS_VLINE			'|'
+#define ACS_HLINE			'-'
 #define ACS_ULCORNER		'┌'
 #define ACS_URCORNER		'┐'
 #define ACS_BLCORNER		'└'
@@ -58,6 +58,8 @@ struct _window_st{
 
 	chtype		_bkgd;
 
+	//short		_bkgd_attr;
+
 	bool		_delay;
 
 	bool		_clear;			/* consider all data in the window invalid? */
@@ -90,6 +92,7 @@ extern	WINDOW* newwin			(int, int, int, int);
 extern	int		delwin			(WINDOW *);
 extern	int		mvwin			(WINDOW *, int, int);
 extern	int		endwin			(void);
+extern	bool	isendwin		(void);
 extern	int		refresh			(void);
 extern	int		wrefresh		(WINDOW*);
 extern	int		addch			(chtype);
@@ -181,5 +184,11 @@ extern	int		color_content	(short, short *, short *, short *);
 extern	int		pair_content	(short, short *, short *);
 extern	int		echo			(void);
 extern	int		noecho			(void);
+extern	int		deleteln		(void);
+extern	int		wdeleteln		(WINDOW *);
+extern	int		insertln		(void);
+extern	int		winsertln		(WINDOW *);
+extern	int		insdelln		(int);
+extern	int		winsdelln		(WINDOW *, int);
 
 #endif
