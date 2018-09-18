@@ -2,6 +2,13 @@
 //#include <stdio.h>
 #include "wncurses.h"
 
+typedef struct _screen _SCREEN;
+
+struct _screen{
+	/*actually the handles of swapbuffer in the window is unused*/
+	CHAR_INFO		_chars[0];
+};
+
 //----------------public functions
 WINDOW*				initscr				(void);
 WINDOW*				newwin				(int nlines, int ncols, int begin_y, int begin_x);
@@ -112,7 +119,7 @@ bool				has_ic				(void);
 bool				has_il				(void);
 char				erasechar			(void);
 int					erasewchar			(wchar_t *ch);
-int					putwin				(WINDOW *win, FILE *filep);
+int					putwin				(WINDOW *window, FILE *filep);
 WINDOW *			getwin				(FILE *filep);
 
 
@@ -382,26 +389,24 @@ wrefresh			(WINDOW *window)
 		return ERR;
 
 	SMALL_RECT _reg = { 
-		window->_beg._x,
-		window->_beg._y,
-		window->_beg._x + window->_size._x - 1,
-		window->_beg._y + window->_size._y - 1 
-	};
+		0, 0,
+		window->_size._x - 1,
+		window->_size._y - 1 };
 
-	ReadConsoleOutputW(
+	if (!ReadConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_FRONT], 
 		_tmp_data, 
 		_coord_create(window->_size._y,window->_size._x),
 		_coord_create(0,0),
-		&_reg
-	);
-	WriteConsoleOutputW(
+		&_reg ))
+		return ERR;
+	if (!WriteConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_BACK], 
 		_tmp_data, 
 		_coord_create(window->_size._y,window->_size._x),
 		_coord_create(0,0),
-		&_reg
-	);
+		&_reg))
+		return ERR;
 
 	free(_tmp_data);
 
@@ -616,7 +621,6 @@ waddchstr			(WINDOW *window, const chtype *chstr)
 	return waddchnstr(window, chstr,-1);
 }
 
-//-------------------------ATTENTION!----------if the chtype is unicode the strlen should change toe the wstrlen
 int					
 waddchnstr			(WINDOW *window, const chtype *chstr, int n)
 {
@@ -742,7 +746,10 @@ wbkgd				(WINDOW *window, chtype input)
 		return ERR;
 
 	//get chars
-	SMALL_RECT _reg = { window->_beg._x,window->_beg._y,(window->_beg._x) + (window->_size._x),(window->_beg._y) + (window->_size._y) };
+	SMALL_RECT _reg = { 
+		0, 0,
+		window->_size._x - 1,
+		window->_size._y - 1};
 	ReadConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_BACK], 
 		_tmp_data, 
@@ -1235,10 +1242,10 @@ wdelch				(WINDOW *window)
 {
 	COORD _buffer_size = _coord_create(1, window->_size._x - window->_cur._x);
 	SMALL_RECT _region = {
-		window->_beg._x + window->_cur._x + 1,
-		window->_beg._y + window->_cur._y,
-		window->_beg._x + window->_size._x - 1,
-		window->_beg._y + window->_cur._y};
+		window->_cur._x + 1,
+		window->_cur._y,
+		window->_size._x - 1,
+		window->_cur._y};
 	CHAR_INFO *_buffer = (CHAR_INFO *)malloc(_buffer_size.X * sizeof(CHAR_INFO));
 	if (_buffer == NULL)
 		return ERR;
@@ -1297,7 +1304,11 @@ start_color			(void)
 	_colors				= (int *)calloc(COLORS, sizeof(int));
 	_color_pairs		= (long long *)calloc(COLOR_PAIRS, sizeof(long long));
 
-	for (int i = 0; i < 8; ++i)
+	//The 3 bits is the rgb
+	for (int i = 0; i < COLORS; ++i)
+		_colors[i] = ((i & 0x1 << 3) >> 3 ? _COLOR_RED : 0)
+			| ((i & 0x1 << 2) >> 2 ? _COLOR_GREEN : 0)
+			| ((i & 0x1 << 1) >> 1 ? _COLOR_BLUE : 0);
 
 	if (!_colors || !_color_pairs)
 		return ERR;
@@ -1336,6 +1347,13 @@ init_pair			(short pair, short f, short b)
 	return OK;
 }
 
+/*
+The value of [rgb] is strictly between 0 to 1000.
+But due to the poor color support of the console in MS Windows,
+when the value of [rgb] exceeds the 100, 
+the actual [rgb] of the color is set to 1,
+or it will set to 0.
+*/
 int
 init_color			(short color, short r, short g, short b)
 {
@@ -1419,10 +1437,10 @@ wdeleteln			(WINDOW *window)
 		window->_size._x);
 
 	SMALL_RECT _region = { 
-		window->_beg._x,
-		window->_beg._y + window->_cur._y + 1,
-		window->_beg._x + window->_size._x - 1,
-		window->_beg._y + window->_size._y - 1 
+		0,
+		window->_cur._y + 1,
+		window->_size._x - 1,
+		window->_size._y - 1 
 	};
 
 	CHAR_INFO *_buffer = (CHAR_INFO *)malloc(
@@ -1471,11 +1489,10 @@ winsertln			(WINDOW *window)
 		window->_size._x);
 
 	SMALL_RECT _region = {
-		window->_beg._x,
-		window->_beg._y + window->_cur._y,
-		window->_beg._x + window->_size._x - 1,
-		window->_beg._y + window->_size._y - 2 
-	};
+		0,
+		window->_cur._y,
+		window->_size._x - 1,
+		window->_size._y - 2 };
 
 	CHAR_INFO *_blank = (CHAR_INFO *)malloc(
 		_buffer_size.X * _buffer_size.Y 
@@ -1565,6 +1582,112 @@ erasewchar			(wchar_t *ch)
 {
 	*ch = 0x8;
 	return OK;
+}
+
+//The raw api of file io in Windows is a little complex
+//So temporily use posix function
+//First store the window, then store the backbuffer
+int
+putwin				(WINDOW *window, FILE *filep)
+{
+	//Store window utils
+	if (fwrite(window, sizeof(WINDOW), 1, filep) != 1)
+		return ERR;
+
+	//Store backbuffer
+	size_t _screen_size = 
+		window->_size._x * window->_size._y * sizeof(CHAR_INFO);
+	_SCREEN *_tmp_screen = (_SCREEN *)malloc(_screen_size);
+	if (!_tmp_screen)
+		return ERR;
+	SMALL_RECT _reg = {
+		0, 0,
+		window->_size._x - 1,
+		window->_size._y - 1 };
+	if(!ReadConsoleOutputW(
+		window->_swapbuffer[SWAPBUFFER_FRONT], 
+		_tmp_screen,
+		_coord_create(window->_size._y, window->_size._x),
+		_coord_create(0,0),
+		&_reg))
+		return ERR;
+	if (fwrite(_tmp_screen, _screen_size, 1, filep) != 1)
+		return ERR;
+	free(_tmp_screen);
+	return OK;
+}
+
+WINDOW*
+getwin				(FILE *filep)
+{
+	//Get window utils. (The two swapbuffer handles are invalid)
+	WINDOW *_window = (WINDOW *)malloc(sizeof(WINDOW));
+	if (fread(_window, sizeof(WINDOW), 1, filep) != 1)
+		return NULL;
+	//Get backbuffer
+	size_t _screen_size = 
+		_window->_size._y * _window->_size._x * sizeof(CHAR_INFO);
+	_SCREEN *_tmp_screen = (_SCREEN *)malloc(_screen_size);
+	if (!_tmp_screen)
+		return NULL;
+	if (fread(_tmp_screen, _screen_size, 1, filep) != 1)
+		return NULL;
+
+	//Reallocate the swapbuffer handle and copy the backbuffer in.
+	HANDLE _tmp_handle = CreateConsoleScreenBuffer(
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_WRITE | FILE_SHARE_READ,
+		NULL,
+		CONSOLE_TEXTMODE_BUFFER,
+		NULL
+	);
+	if(_tmp_handle == INVALID_HANDLE_VALUE)
+		return NULL;
+	_window->_swapbuffer[SWAPBUFFER_FRONT] = _tmp_handle;
+
+	_tmp_handle = CreateConsoleScreenBuffer(
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_WRITE | FILE_SHARE_READ,
+		NULL,
+		CONSOLE_TEXTMODE_BUFFER,
+		NULL
+	);
+	if(_tmp_handle == INVALID_HANDLE_VALUE)
+		return NULL;
+	_window->_swapbuffer[SWAPBUFFER_BACK] = _tmp_handle;
+
+	//The COORD is XY and the COORD_S IS yx so cannot be converted directly
+	if (
+			!SetConsoleScreenBufferSize (
+				_window->_swapbuffer[SWAPBUFFER_FRONT],
+				_coord_create(_window->_size._y, _window->_size._x)
+			)
+			||
+			!SetConsoleScreenBufferSize (
+				_window->_swapbuffer[SWAPBUFFER_BACK],
+				_coord_create(_window->_size._y, _window->_size._x)
+			)
+		)
+		return NULL;
+
+	SMALL_RECT _region={ 
+		0, 0,
+		_window->_size._x - 1,
+		_window->_size._y - 1, };
+	if (!WriteConsoleOutput(_window->_swapbuffer[SWAPBUFFER_FRONT],
+		_tmp_screen->_chars,
+		_coord_create(_window->_size._y,_window->_size._x),
+		_coord_create(0, 0),
+		&_region))
+		return NULL;
+	if (!WriteConsoleOutput(_window->_swapbuffer[SWAPBUFFER_BACK],
+		_tmp_screen->_chars,
+		_coord_create(_window->_size._y,_window->_size._x),
+		_coord_create(0, 0),
+		&_region))
+		return NULL;
+
+	return _window;
 }
 
 

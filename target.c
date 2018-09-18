@@ -40,22 +40,22 @@ int doupdate (void);
 WINDOW* dupwin (WINDOW *);			/* implemented */
 int echo (void);
 int echochar (const chtype);			/* generated */
-int erase (void);				/* generated */
+int erase (void);
 int endwin (void);
-char erasechar (void);				/* implemented */
+char erasechar (void);
 void filter (void);				/* implemented */
 int flash (void);
 int flushinp (void);				/* implemented */
-chtype getbkgd (WINDOW *);			/* generated */
-int getch (void);				/* generated */
-int getnstr (char *, int);			/* generated */
-int getstr (char *);				/* generated */
+chtype getbkgd (WINDOW *);
+int getch (void);
+int getnstr (char *, int);
+int getstr (char *);
 WINDOW* getwin (FILE *);			/* implemented */
 int halfdelay (int);				/* implemented */
-bool has_colors (void);				/* implemented */
-bool has_ic (void);				/* implemented */
-bool has_il (void);				/* implemented */
-int hline (chtype, int);				/* generated */
+bool has_colors (void);	
+bool has_ic (void);
+bool has_il (void);
+int hline (chtype, int);
 void idcok (WINDOW *, bool);			/* implemented */
 int idlok (WINDOW *, bool);			/* implemented */
 void immedok (WINDOW *, bool);			/* implemented */
