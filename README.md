@@ -1,5 +1,5 @@
 # wncurses
-![progress](http://progressed.io/bar/33?title=progress)
+![progress](http://progressed.io/bar/34?title=progress)
 
 ![build](https://img.shields.io/badge/build-passed-brightgreen.svg)
 
