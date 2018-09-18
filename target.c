@@ -56,9 +56,9 @@ bool has_colors (void);
 bool has_ic (void);
 bool has_il (void);
 int hline (chtype, int);
-void idcok (WINDOW *, bool);			/* implemented */
-int idlok (WINDOW *, bool);			/* implemented */
-void immedok (WINDOW *, bool);			/* implemented */
+void idcok (WINDOW *, bool);
+int idlok (WINDOW *, bool);
+void immedok (WINDOW *, bool);
 chtype inch (void);				/* generated */
 int inchnstr (chtype *, int);			/* generated */
 int inchstr (chtype *);				/* generated */
