@@ -60,7 +60,11 @@ struct _window_st{
 
 	//short		_bkgd_attr;
 
+	//Input delay
 	bool		_delay;
+
+	//Output delay
+	bool		_immed;
 
 	//bool		_clear;			/* consider all data in the window invalid? */
 
@@ -200,5 +204,8 @@ extern	char	erasechar		(void);
 extern	int		erasewchar		(wchar_t *);
 extern	int		putwin			(WINDOW *, FILE *);
 extern	WINDOW*	getwin			(FILE *);
+extern	int		idlok			(WINDOW *, bool);
+extern	void	idcok			(WINDOW *, bool);
+extern	void	immedok			(WINDOW *, bool);
 
 #endif

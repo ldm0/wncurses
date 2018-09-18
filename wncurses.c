@@ -121,6 +121,9 @@ char				erasechar			(void);
 int					erasewchar			(wchar_t *ch);
 int					putwin				(WINDOW *window, FILE *filep);
 WINDOW *			getwin				(FILE *filep);
+int					idlok				(WINDOW *window, bool n);
+void				idcok				(WINDOW *window, bool n);
+void				immedok				(WINDOW *window, bool n);
 
 
 
@@ -135,6 +138,7 @@ inline	BOOL		_clear_buffer		(HANDLE buffer,chtype input);
 inline	BOOL		_cursor_sync		(WINDOW *window);			
 inline	short		_find_color			(int color);
 int					_vwprintw			(WINDOW *window, const char *input, va_list args);
+int					_waddch_noimmed		(WINDOW *window, chtype input, bool refresh);
 
 //public vars
 WINDOW		*stdscr;
@@ -269,6 +273,7 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 	_tmp_window->_parent = NULL;
 	_tmp_window->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 	_tmp_window->_delay = TRUE;
+	_tmp_window->_immed = FALSE;
 	//_tmp_window->_clear = FALSE;		//not needed
 
 	_tmp_window->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
@@ -449,42 +454,11 @@ addch				(chtype input)
 int
 waddch				(WINDOW* window, chtype input)
 {
-	CHAR_INFO _input_ch;
-	_input_ch.Char.UnicodeChar = input;
-	_input_ch.Attributes = window->_cur_color;
-
-	COORD _size = _coord_create(1, 1);
-	COORD _begin = _coord_create(0, 0);
-	SMALL_RECT _region = { 
-		window->_cur._x,
-		window->_cur._y,
-		window->_cur._x + window->_size._x - 1,
-		window->_cur._y + window->_size._y - 1
-	};
-
-	//Without the judgemet, actually the '\r' and '\n'can be print to the screen but seems like a square
-	if (input == '\r')
-		window->_cur._x = 0;
-	else if (input == '\n'){
-		window->_cur._y++;
-		window->_cur._x = 0;
-	}
-	else {
-		if (
-			!WriteConsoleOutputW(
-				window->_swapbuffer[SWAPBUFFER_BACK], 
-				&_input_ch,
-				_size, 
-				_begin, 
-				&_region
-			)
-		) {
-			DWORD err_code = GetLastError();
+	if(!_waddch_noimmed(window, input))
+		return ERR;
+	if(window->_immed)
+		if(!wrefresh(window))
 			return ERR;
-		}
-		window->_cur._x = (window->_cur._x + 1) % (window->_size._x);
-		window->_cur._y += (window->_cur._x == 0);
-	}
 	return OK;
 }
 
@@ -553,13 +527,16 @@ waddnstr			(WINDOW *window, const char *input, int n)
 {
 	if (n == -1){
 		for (int i = 0; input[i]; ++i)
-			if (waddch(window, input[i]) == ERR)
+			if (_waddch_noimmed(window, input[i]) == ERR)
 				return ERR;
 	}
 	else
 		for (int i = 0; i < n && input[i]; ++i)
-			if (waddch(window, input[i]) == ERR)
+			if (_waddch_noimmed(window, input[i]) == ERR)
 				return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -600,6 +577,9 @@ wmove				(WINDOW *window, int y, int x)
 {
 	window->_cur._y = y;
 	window->_cur._x = x;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -626,13 +606,16 @@ waddchnstr			(WINDOW *window, const chtype *chstr, int n)
 {
 	if (n == -1) {
 		for (int i = 0; chstr[i]; ++i)
-			if (waddch(window, chstr[i]) == ERR)
+			if (_waddch_noimmed(window, chstr[i]) == ERR)
 				return ERR;
 	}
 	else
 		for (int i = 0; i < n && chstr[i]; ++i)
-			if (waddch(window, chstr[i]) == ERR)
+			if (_waddch_noimmed(window, chstr[i]) == ERR)
 				return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -669,6 +652,9 @@ printw				(const char *input, ...)
 	va_start(_args, input);
 	int _result = _vwprintw(stdscr, input, _args);
 	va_end(_args);
+	if (stdscr->_immed)
+		if (!wrefresh(stdscr))
+			return ERR;
 	return _result;
 }
 
@@ -680,6 +666,9 @@ mvprintw			(int y, int x, const char *input, ...)
 	va_start(_args, input);
 	int _result = _vwprintw(stdscr, input, _args);
 	va_end(_args);
+	if (stdscr->_immed)
+		if (!wrefresh(stdscr))
+			return ERR;
 	return _result;
 }
 
@@ -690,6 +679,9 @@ wprintw				(WINDOW *window, const char *input, ...)
 	va_start(_args, input);
 	int _result = _vwprintw(window, input, _args);
 	va_end(_args);
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return _result;
 }
 
@@ -701,6 +693,9 @@ mvwprintw			(WINDOW *window, int y, int x, const char *input, ...)
 	va_start(_args, input);
 	int _result = _vwprintw(window, input, _args);
 	va_end(_args);
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return _result;
 }
 
@@ -780,6 +775,10 @@ wbkgd				(WINDOW *window, chtype input)
 
 	window->_bkgd = input;
 
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
+
 	return OK;
 }
 
@@ -853,12 +852,16 @@ wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype t
 		mvwaddch(window, y, window->_size._x - 1, rs);
 	}
 
-	wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
+	if (!wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x))
+		return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
 int 
-box					(WINDOW *window,chtype verch,chtype horch)
+box					(WINDOW *window, chtype verch, chtype horch)
 {
 	return wborder(window, verch, verch, horch, horch, 0, 0, 0, 0);
 }
@@ -905,6 +908,9 @@ whline				(WINDOW *window, chtype ch, int n)
 	for (int i = 0; i < _length; ++i)
 	 	if(waddch(window,ch) == ERR)
 			return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x);
 }
 
@@ -939,6 +945,9 @@ wvline				(WINDOW *window, chtype ch, int n)
 			return ERR;
 	if (!wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x))
 		return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -1008,6 +1017,9 @@ werase				(WINDOW *window)
 		window->_swapbuffer[SWAPBUFFER_BACK],
 		window->_bkgd) == FALSE)
 		return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -1034,6 +1046,9 @@ wclrtobot			(WINDOW *window)
 
 	if(wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x) == ERR)
 		return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -1057,6 +1072,9 @@ wclrtoeol			(WINDOW *window)
 
 	if (wmove(window, _tmp_cur_pos._y, _tmp_cur_pos._x) == ERR)
 		return ERR;
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -1174,6 +1192,9 @@ mvcur				(int oldrow, int oldcol, int newrow, int newcol)
 {
 	stdscr->_cur._x += newcol - oldcol;
 	stdscr->_cur._y += newrow - oldrow;
+	if (stdscr->_immed)
+		if (!wrefresh(stdscr))
+			return ERR;
 	return OK;
 }
 
@@ -1273,6 +1294,10 @@ wdelch				(WINDOW *window)
 	free(_buffer);
 
 	_buffer = NULL;
+
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 
 	return OK;
 }
@@ -1472,6 +1497,9 @@ wdeleteln			(WINDOW *window)
 		&_region))
 		return ERR;
 	free(_buffer);
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 	return OK;
 }
 
@@ -1523,6 +1551,10 @@ winsertln			(WINDOW *window)
 		return ERR;
 
 	free(_blank);
+
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
 
 	return OK;
 }
@@ -1690,6 +1722,28 @@ getwin				(FILE *filep)
 	return _window;
 }
 
+/*
+MS Windows console doesn't have the hardware insert/delete function
+So do nothing
+*/
+int
+idlok				(WINDOW *window, bool n)
+{
+	return OK;
+}
+
+void
+idcok				(WINDOW *window, bool n)
+{
+	return OK;
+}
+
+void
+immedok				(WINDOW *window, bool n)
+{
+	window->_immed = n;
+}
+
 
 
 
@@ -1798,4 +1852,47 @@ _vwprintw			(WINDOW *window, const char *input, va_list args)
 	return OK;
 }
 
+//The reason why use private function is the immed mode
+//Functions like waddnstr may call waddch a lot of times.
+//But is the window is in immed mode, we will do wreafresh repeatedly.
+int
+_waddch_noimmed				(WINDOW *window, chtype input)
+{
+	CHAR_INFO _input_ch;
+	_input_ch.Char.UnicodeChar = input;
+	_input_ch.Attributes = window->_cur_color;
+
+	COORD _size = _coord_create(1, 1);
+	COORD _begin = _coord_create(0, 0);
+	SMALL_RECT _region = { 
+		window->_cur._x,
+		window->_cur._y,
+		window->_cur._x + window->_size._x - 1,
+		window->_cur._y + window->_size._y - 1
+	};
+
+	//Without the judgemet, actually the '\r' and '\n'can be print to the screen but seems like a square
+	if (input == '\r')
+		window->_cur._x = 0;
+	else if (input == '\n'){
+		window->_cur._y++;
+		window->_cur._x = 0;
+	}
+	else {
+		if (
+			!WriteConsoleOutputW(
+				window->_swapbuffer[SWAPBUFFER_BACK], 
+				&_input_ch,
+				_size, 
+				_begin, 
+				&_region
+			)
+		) {
+			DWORD err_code = GetLastError();
+			return ERR;
+		}
+		window->_cur._x = (window->_cur._x + 1) % (window->_size._x);
+		window->_cur._y += (window->_cur._x == 0);
+	}
+}
 
