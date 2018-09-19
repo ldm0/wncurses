@@ -1747,7 +1747,7 @@ inch				(void)
 }
 
 chtype
-winch				(WINDOW * window)
+winch				(WINDOW *window)
 {
 	wchar_t _char;
 	DWORD _read_length;
@@ -1758,6 +1758,20 @@ winch				(WINDOW * window)
 			&_read_length))
 		return 0;
 	return _char;
+}
+
+chtype
+mvinch				(int y, int x)
+{
+	return mvwinch(stdscr, y, x);
+}
+
+chtype
+mvwinch				(WINDOW *window, int y, int x)
+{
+	if (!wmove(window, y, x))
+		return ERR;
+	return winch(window);
 }
 
 
