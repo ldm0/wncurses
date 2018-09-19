@@ -1,5 +1,5 @@
 # wncurses
-![progress](http://progressed.io/bar/40?title=progress) ![build](https://img.shields.io/badge/build-passed-brightgreen.svg) ![license](https://img.shields.io/badge/license-WTFPL-green.svg)
+![progress](http://progressed.io/bar/40?title=progress) ![build](https://img.shields.io/badge/build-passing-brightgreen.svg) ![license](https://img.shields.io/badge/license-WTFPL-brightgreen.svg)
 
 NCURSES in console of MS Windows.
 
