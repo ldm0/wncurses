@@ -128,6 +128,10 @@ chtype				inch				(void);
 chtype				winch				(WINDOW *window);
 chtype				mvinch				(int y, int x);
 chtype				mvwinch				(WINDOW *window, int y, int x);
+int					insch				(chtype ch);
+int					winsch				(WINDOW *window, chtype ch);
+int					mvinsch				(int y, int x, chtype ch);
+int					wmvinsch			(WINDOW *window, int y, int x, chtype ch);
 
 
 
@@ -1774,6 +1778,68 @@ mvwinch				(WINDOW *window, int y, int x)
 	return winch(window);
 }
 
+int
+insch				(chtype ch)
+{
+	return winsch(stdscr, ch);
+}
+
+int
+winsch				(WINDOW *window, chtype ch)
+{
+	COORD _buffer_size = _coord_create(1, window->_size._x - window->_cur._x);
+	SMALL_RECT _region = {
+		window->_cur._x,
+		window->_cur._y,
+		window->_size._x - 2,
+		window->_cur._y};
+	CHAR_INFO *_buffer = (CHAR_INFO *)malloc(_buffer_size.X * sizeof(CHAR_INFO));
+	if (_buffer == NULL)
+		return ERR;
+
+	if (
+		!ReadConsoleOutputW(
+			window->_swapbuffer[SWAPBUFFER_BACK],
+			_buffer,_buffer_size,
+			_coord_create(0, 1),
+			&_region))
+		return ERR;
+
+	//the last cell of buffer is empty
+	_buffer[0].Char.UnicodeChar = ch;
+	_buffer[0].Attributes = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+
+	_region.Right += 1;
+	if (!WriteConsoleOutputW(
+		window->_swapbuffer[SWAPBUFFER_BACK],
+		_buffer,_buffer_size,
+		_coord_create(0, 0),
+		&_region))
+		return ERR;
+
+	free(_buffer);
+
+	_buffer = NULL;
+
+	if (window->_immed)
+		if (!wrefresh(window))
+			return ERR;
+	return OK;
+}
+
+int
+mvinsch				(int y, int x, chtype ch)
+{
+	return mvwinsch(stdscr, y, x, ch);
+}
+
+int
+mvwinsch			(WINDOW *window, int y, int x, chtype ch)
+{
+	if (!wmove(window, y, x))
+		return ERR;
+	return winsch(window, ch);
+}
 
 
 

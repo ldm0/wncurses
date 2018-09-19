@@ -211,6 +211,10 @@ extern	chtype	inch			(void);
 extern	chtype	winch			(WINDOW *);
 extern	chtype	mvinch			(int, int);
 extern	chtype	mvwinch			(WINDOW *, int, int);
+extern	int		insch			(chtype);
+extern	int		winsch			(WINDOW *, chtype);
+extern	int		mvinsch			(int, int, chtype);
+extern	int		mvwinsch		(WINDOW *, int, int, chtype);
 
 
 #endif

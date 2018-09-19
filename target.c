@@ -59,16 +59,16 @@ int hline (chtype, int);
 void idcok (WINDOW *, bool);
 int idlok (WINDOW *, bool);
 void immedok (WINDOW *, bool);
-chtype inch (void);				/* generated */
-int inchnstr (chtype *, int);			/* generated */
-int inchstr (chtype *);				/* generated */
-WINDOW* initscr (void);				/* implemented */
-int init_color (NCURSES_COLOR_T,NCURSES_COLOR_T,NCURSES_COLOR_T,NCURSES_COLOR_T);	/* implemented */
-int init_pair (NCURSES_PAIRS_T,NCURSES_COLOR_T,NCURSES_COLOR_T);		/* implemented */
-int innstr (char *, int);			/* generated */
-int insch (chtype);				/* generated */
-int insdelln (int);				/* generated */
-int insertln (void);				/* generated */
+chtype inch (void);
+int inchnstr (chtype *, int);
+int inchstr (chtype *);
+WINDOW* initscr (void);
+int init_color (NCURSES_COLOR_T,NCURSES_COLOR_T,NCURSES_COLOR_T,NCURSES_COLOR_T);
+int init_pair (NCURSES_PAIRS_T,NCURSES_COLOR_T,NCURSES_COLOR_T);
+int innstr (char *, int);
+int insch (chtype);
+int insdelln (int);
+int insertln (void);
 int insnstr (const char *, int);			/* generated */
 int insstr (const char *);			/* generated */
 int instr (char *);				/* generated */
