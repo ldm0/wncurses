@@ -69,9 +69,9 @@ int innstr (char *, int);
 int insch (chtype);
 int insdelln (int);
 int insertln (void);
-int insnstr (const char *, int);			/* generated */
-int insstr (const char *);			/* generated */
-int instr (char *);				/* generated */
+int insnstr (const char *, int);
+int insstr (const char *);
+int instr (char *);
 int intrflush (WINDOW *,bool);			/* implemented */
 bool isendwin (void);				/* implemented */
 bool is_linetouched (WINDOW *,int);		/* implemented */

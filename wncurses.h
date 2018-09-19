@@ -215,6 +215,16 @@ extern	int		insch			(chtype);
 extern	int		winsch			(WINDOW *, chtype);
 extern	int		mvinsch			(int, int, chtype);
 extern	int		mvwinsch		(WINDOW *, int, int, chtype);
+extern	int		insstr			(const char *);
+extern	int		insnstr			(const char *, int);
+extern	int		winsstr			(WINDOW *, const char *);
+extern	int		winsnstr		(WINDOW *, const char *, int);
+extern	int		mvinsstr		(int, int, const char *);
+extern	int		mvinsnstr		(int, int, const char *, int);
+extern	int		mvwinsstr		(WINDOW *, int, int, const char *);
+extern	int		mvwinsnstr		(WINDOW *, int, int, const char *, int);
+
+
 
 
 #endif

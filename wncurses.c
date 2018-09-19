@@ -131,7 +131,15 @@ chtype				mvwinch				(WINDOW *window, int y, int x);
 int					insch				(chtype ch);
 int					winsch				(WINDOW *window, chtype ch);
 int					mvinsch				(int y, int x, chtype ch);
-int					wmvinsch			(WINDOW *window, int y, int x, chtype ch);
+int					mvwinsch			(WINDOW *window, int y, int x, chtype ch);
+int					insstr				(const char *input);
+int					insnstr				(const char *input, int n);
+int					winsstr				(WINDOW *window, const char *input);
+int					winsnstr			(WINDOW *window, const char *input, int n);
+int					mvinsstr			(int y, int x, const char *input);
+int					mvinsnstr			(int y, int x, const char *input, int n);
+int					mvwinsstr			(WINDOW *window, int y, int x, const char *input);
+int					mvwinsnstr			(WINDOW *window, int y, int x, const char *input, int n);
 
 
 
@@ -536,6 +544,8 @@ waddnstr			(WINDOW *window, const char *input, int n)
 			if (_waddch_noimmed(window, input[i]) == ERR)
 				return ERR;
 	}
+	else if (n < 0)
+		return ERR;
 	else
 		for (int i = 0; i < n && input[i]; ++i)
 			if (_waddch_noimmed(window, input[i]) == ERR)
@@ -1465,8 +1475,7 @@ wdeleteln			(WINDOW *window)
 		0,
 		window->_cur._y + 1,
 		window->_size._x - 1,
-		window->_size._y - 1 
-	};
+		window->_size._y - 1 };
 
 	CHAR_INFO *_buffer = (CHAR_INFO *)malloc(
 		_buffer_size.Y * _buffer_size.X 
@@ -1841,6 +1850,91 @@ mvwinsch			(WINDOW *window, int y, int x, chtype ch)
 	return winsch(window, ch);
 }
 
+int
+insstr				(const char *input)
+{
+	return winsstr(stdscr, input);
+}
+
+int
+insnstr				(const char *input, int n)
+{
+	return winsnstr(stdscr, input, n);
+}
+
+int
+winsstr				(WINDOW *window, const char *input)
+{
+	return winsnstr(window, input, -1);
+}
+
+int
+winsnstr			(WINDOW *window, const char *input, int n)
+{
+	//The description in Linux Man Page is a little confusing.
+	//In addchnstr if the n == -1 print all the input.
+	//But in insnstr fuction, if the n<=0, print all the input.
+	//Whatever....
+	//n = (n <= 0) ? MAX(strlen(input), window->_size._x - window->_cur._x)
+	//	: MIN(n, window->_size._x - window->_cur._x);
+	n = (n <= 0) ? window->_size._x - window->_cur._x
+		: MIN(n, window->_size._x - window->_cur._x);
+	COORD _buffer_size = _coord_create(1, window->_size._x - window->_cur._x);
+	SMALL_RECT _reg = {
+		window->_cur._x,
+		window->_cur._y,
+		window->_size._x - 1,
+		window->_cur._y };
+	CHAR_INFO *_buffer = (CHAR_INFO *)
+		malloc((window->_size._x - window->_cur._x) * sizeof(CHAR_INFO));
+	//Firstly store the input into the buffer.
+	int i;
+	for (i = 0; i < n; ++i) {
+		_buffer[i].Char.UnicodeChar = input[i];
+		_buffer[i].Attributes = 
+			FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+	}
+	//Secondly store the line after the cursor into the buffer
+	if (!ReadConsoleOutputW(window->_swapbuffer[SWAPBUFFER_BACK],
+		_buffer,_buffer_size,
+		_coord_create(0, i),
+		&_reg))
+		return ERR;
+	
+	if (!WriteConsoleOutputW(window->_swapbuffer[SWAPBUFFER_BACK],
+		_buffer,_buffer_size,
+		_coord_create(0, 0),
+		&_reg))
+		return ERR;
+	free(_buffer);
+	return OK;
+}
+
+int
+mvinsstr			(int y, int x, const char *input)
+{
+	return mvwinsstr(stdscr, y, x, input);
+}
+
+int
+mvinsnstr			(int y, int x, const char *input, int n)
+{
+	return mvwinsnstr(stdscr, y, x, input, n);
+}
+
+int
+mvwinsstr			(WINDOW *window, int y, int x, const char *input)
+{
+	return mvwinsnstr(window, y, x, input, -1);
+}
+
+int
+mvwinsnstr			(WINDOW *window, int y, int x, const char *input, int n)
+{
+	if (!wmove(window, y, x))
+		return ERR;
+	return winsnstr(window, input, n);
+}
 
 
 
