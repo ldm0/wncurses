@@ -124,6 +124,10 @@ WINDOW *			getwin				(FILE *filep);
 int					idlok				(WINDOW *window, bool n);
 void				idcok				(WINDOW *window, bool n);
 void				immedok				(WINDOW *window, bool n);
+chtype				inch				(void);
+chtype				winch				(WINDOW *window);
+chtype				mvinch				(int y, int x);
+chtype				mvwinch				(WINDOW *window, int y, int x);
 
 
 
@@ -138,7 +142,7 @@ inline	BOOL		_clear_buffer		(HANDLE buffer,chtype input);
 inline	BOOL		_cursor_sync		(WINDOW *window);			
 inline	short		_find_color			(int color);
 int					_vwprintw			(WINDOW *window, const char *input, va_list args);
-int					_waddch_noimmed		(WINDOW *window, chtype input, bool refresh);
+int					_waddch_noimmed		(WINDOW *window, chtype input);
 
 //public vars
 WINDOW		*stdscr;
@@ -156,8 +160,6 @@ initscr				(void)
 {
 	_public_var_reset();
 	_private_var_reset();
-
-	SetConsoleCP(936);
 
 	CONSOLE_SCREEN_BUFFER_INFO  console_info;
 
@@ -1145,18 +1147,12 @@ winnstr				(WINDOW *window, char *output, int n)
 	DWORD _read_length;
 	DWORD _tmp_length = (n == -1) ?
 		window->_size._x - window->_cur._x
-		:
-		MIN(n, window->_size._x - window->_cur._x)
-		;
-	if (
-		!ReadConsoleOutputCharacter(
+		: MIN(n, window->_size._x - window->_cur._x) ;
+	if ( !ReadConsoleOutputCharacter(
 			window->_swapbuffer[SWAPBUFFER_BACK],
-			output,
-			_tmp_length,
+			output, _tmp_length,
 			_coord_create(window->_cur._y, window->_cur._x),
-			&_read_length
-		)
-	)
+			&_read_length))
 		return ERR;
 	return OK;
 }
@@ -1638,7 +1634,7 @@ putwin				(WINDOW *window, FILE *filep)
 		window->_size._y - 1 };
 	if(!ReadConsoleOutputW(
 		window->_swapbuffer[SWAPBUFFER_FRONT], 
-		_tmp_screen,
+		_tmp_screen->_chars,
 		_coord_create(window->_size._y, window->_size._x),
 		_coord_create(0,0),
 		&_reg))
@@ -1735,13 +1731,33 @@ idlok				(WINDOW *window, bool n)
 void
 idcok				(WINDOW *window, bool n)
 {
-	return OK;
+	//do nothing
 }
 
 void
 immedok				(WINDOW *window, bool n)
 {
 	window->_immed = n;
+}
+
+chtype
+inch				(void)
+{
+	return winch(stdscr);
+}
+
+chtype
+winch				(WINDOW * window)
+{
+	wchar_t _char;
+	DWORD _read_length;
+	if ( !ReadConsoleOutputCharacterW(
+			window->_swapbuffer[SWAPBUFFER_BACK],
+			&_char, 1,
+			_coord_create(window->_cur._y, window->_cur._x),
+			&_read_length))
+		return 0;
+	return _char;
 }
 
 
@@ -1894,5 +1910,6 @@ _waddch_noimmed				(WINDOW *window, chtype input)
 		window->_cur._x = (window->_cur._x + 1) % (window->_size._x);
 		window->_cur._y += (window->_cur._x == 0);
 	}
+	return OK;
 }
 

@@ -207,5 +207,10 @@ extern	WINDOW*	getwin			(FILE *);
 extern	int		idlok			(WINDOW *, bool);
 extern	void	idcok			(WINDOW *, bool);
 extern	void	immedok			(WINDOW *, bool);
+extern	chtype	inch			(void);
+extern	chtype	winch			(WINDOW *);
+extern	chtype	mvinch			(int, int);
+extern	chtype	mvwinch			(WINDOW *, int, int);
+
 
 #endif
