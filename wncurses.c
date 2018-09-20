@@ -140,6 +140,9 @@ int					mvinsstr			(int y, int x, const char *input);
 int					mvinsnstr			(int y, int x, const char *input, int n);
 int					mvwinsstr			(WINDOW *window, int y, int x, const char *input);
 int					mvwinsnstr			(WINDOW *window, int y, int x, const char *input, int n);
+int					intrflush			(WINDOW *window, bool bf);
+int					keypad				(WINDOW *window, bool bf);
+int					leaveok				(WINDOW *window, bool bf);
 
 
 
@@ -164,6 +167,7 @@ int			COLOR_PAIRS;
 //private vars
 bool		_can_change_color;
 bool		_echo;
+bool		_intrflush;
 int			*_colors;
 long long	*_color_pairs;
 
@@ -288,6 +292,8 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 	_tmp_window->_cur_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 	_tmp_window->_delay = TRUE;
 	_tmp_window->_immed = FALSE;
+	_tmp_window->_use_keypad = TRUE;
+	_tmp_window->_leaveok = FALSE;
 	//_tmp_window->_clear = FALSE;		//not needed
 
 	_tmp_window->_swapbuffer[SWAPBUFFER_FRONT] = CreateConsoleScreenBuffer(
@@ -1936,6 +1942,28 @@ mvwinsnstr			(WINDOW *window, int y, int x, const char *input, int n)
 	return winsnstr(window, input, n);
 }
 
+int
+intrflush			(WINDOW *window, bool bf)
+{
+	//Ignore the window argument.
+	_intrflush = bf;
+	return OK;
+}
+
+int
+keypad				(WINDOW *window, bool bf)
+{
+	window->_use_keypad = bf;
+	return OK;
+}
+
+int
+leaveok				(WINDOW *window, bool bf)
+{
+	window->_leaveok = bf;
+	return OK;
+}
+
 
 
 //-------------------private functions
@@ -1954,6 +1982,7 @@ _private_var_reset	(void)
 	_echo				= TRUE;
 	_colors				= NULL;
 	_color_pairs		= NULL;
+	_intrflush			= FALSE;
 }
 
 inline	COORD

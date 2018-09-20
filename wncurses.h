@@ -66,6 +66,8 @@ struct _window_st{
 	//Output delay
 	bool		_immed;
 
+	bool		_use_keypad;
+
 	//bool		_clear;			/* consider all data in the window invalid? */
 
     //the former is the front buffer
@@ -73,7 +75,7 @@ struct _window_st{
 
     /* option values set by user */
 	//bool		_notimeout;		/* no time out on function-key entry? */
-	//bool		_leaveok;		/* OK to not reset cursor on exit? */
+	bool		_leaveok;		/* OK to not reset cursor on exit? */
 	//bool		_scroll;		/* OK to scroll this window? */
 	//bool		_idlok;			/* OK to use insert/delete line? */
 	//bool		_idcok;			/* OK to use insert/delete char? */
@@ -223,6 +225,9 @@ extern	int		mvinsstr		(int, int, const char *);
 extern	int		mvinsnstr		(int, int, const char *, int);
 extern	int		mvwinsstr		(WINDOW *, int, int, const char *);
 extern	int		mvwinsnstr		(WINDOW *, int, int, const char *, int);
+extern	int		intrflush		(WINDOW *, bool);
+extern	int		keypad			(WINDOW *, bool);
+extern	int		leaveok			(WINDOW *, bool);
 
 
 

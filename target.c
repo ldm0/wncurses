@@ -72,13 +72,13 @@ int insertln (void);
 int insnstr (const char *, int);
 int insstr (const char *);
 int instr (char *);
-int intrflush (WINDOW *,bool);			/* implemented */
-bool isendwin (void);				/* implemented */
+int intrflush (WINDOW *,bool);             //
+bool isendwin (void);
 bool is_linetouched (WINDOW *,int);		/* implemented */
 bool is_wintouched (WINDOW *);			/* implemented */
 extern NCURSES_EXPORT(const char *) keyname (int);		/* implemented */
-int keypad (WINDOW *,bool);			/* implemented */
-char killchar (void);				/* implemented */
+int keypad (WINDOW *,bool);			//
+char killchar (void);
 int leaveok (WINDOW *,bool);			/* implemented */
 char* longname (void);				/* implemented */
 int meta (WINDOW *,bool);			/* implemented */
