@@ -16,5 +16,7 @@ The problems are way more than I thought. (18/9/11)
 The Windows console only provides 3 bits to constrol the color, which means there are only 8 colors.
 
 ###TO DO LIST
- [x] 
- [x]
+- [x] scanw
+- [x] keypad
+- [x] intrflush
+- [x] leaveok
