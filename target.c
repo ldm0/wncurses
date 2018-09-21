@@ -82,12 +82,12 @@ char killchar (void);
 int leaveok (WINDOW *,bool);			/* implemented */
 char* longname (void);				/* implemented */
 int meta (WINDOW *,bool);			/* implemented */
-int move (int, int);				/* generated */
-int mvaddch (int, int, const chtype);		/* generated */
-int mvaddchnstr (int, int, const chtype *, int);	/* generated */
-int mvaddchstr (int, int, const chtype *);	/* generated */
-int mvaddnstr (int, int, const char *, int);	/* generated */
-int mvaddstr (int, int, const char *);		/* generated */
+int move (int, int);
+int mvaddch (int, int, const chtype);
+int mvaddchnstr (int, int, const chtype *, int);
+int mvaddchstr (int, int, const chtype *);
+int mvaddnstr (int, int, const char *, int);
+int mvaddstr (int, int, const char *);
 int mvchgat (int, int, int, attr_t, NCURSES_PAIRS_T, const void *);	/* generated */
 int mvcur (int,int,int,int);			/* implemented */
 int mvdelch (int, int);				/* generated */

@@ -143,7 +143,7 @@ int					mvwinsnstr			(WINDOW *window, int y, int x, const char *input, int n);
 int					intrflush			(WINDOW *window, bool bf);
 int					keypad				(WINDOW *window, bool bf);
 int					leaveok				(WINDOW *window, bool bf);
-
+int					scanw				(const char *, ...);
 
 
 //-------------------private functions
@@ -1963,6 +1963,10 @@ leaveok				(WINDOW *window, bool bf)
 	window->_leaveok = bf;
 	return OK;
 }
+
+int
+scanw				(const char *, ...);
+
 
 
 

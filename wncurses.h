@@ -228,6 +228,8 @@ extern	int		mvwinsnstr		(WINDOW *, int, int, const char *, int);
 extern	int		intrflush		(WINDOW *, bool);
 extern	int		keypad			(WINDOW *, bool);
 extern	int		leaveok			(WINDOW *, bool);
+extern	int		scanw			(const char *, ...);
+
 
 
 
