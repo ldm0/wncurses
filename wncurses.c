@@ -1965,7 +1965,10 @@ leaveok				(WINDOW *window, bool bf)
 }
 
 int
-scanw				(const char *, ...);
+scanw				(const char *, ...)
+{
+
+}
 
 
 
