@@ -3,7 +3,7 @@
 
 NCURSES in MS cmd.
 
-###### Functions implemented(132/330)
+### Functions implemented(132/330)
 
 Recently found that the ncurses is really convient for building beautiful programs in the form of command line.
 
