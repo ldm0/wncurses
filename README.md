@@ -1,7 +1,9 @@
 # wncurses
 ![progress](http://progressed.io/bar/40?title=progress) ![build](https://img.shields.io/badge/build-passing-brightgreen.svg) ![license](https://img.shields.io/badge/license-WTFPL-brightgreen.svg)
 
-NCURSES in console of MS Windows.
+NCURSES in MS cmd.
+
+###### Functions implemented(132/330)
 
 Recently found that the ncurses is really convient for building beautiful programs in the form of command line.
 
