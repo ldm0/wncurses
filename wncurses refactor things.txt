@@ -1,4 +1,4 @@
-I feel guilty for the junk code I wrote.
+Start refactoring the code.
 When I started to implement the ncurses function, I did't realize that the states feature like immedok() will influence so many functions.
 The code is so duplicate that when I want to add a state feature, I need to change a lot of functions, which is annoying.
 Which even more annoying is that the more functions I implement, the more changes should I make, and its very easy to miss one or more functions.
