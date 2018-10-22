@@ -144,9 +144,9 @@ int					intrflush			(WINDOW *window, bool bf);
 int					keypad				(WINDOW *window, bool bf);
 int					leaveok				(WINDOW *window, bool bf);
 int					scanw				(const char *input, ...);
-int					wscanw				(WINDOW *winodw, const char * input, ...)
-int					mvscanw				(int y, int x, const char * input, ...)
-int					mvwscanw			(WINDOW *winodw, int y, int x, const char * input, ...)
+int					wscanw				(WINDOW *winodw, const char * input, ...);
+int					mvscanw				(int y, int x, const char * input, ...);
+int					mvwscanw			(WINDOW *winodw, int y, int x, const char * input, ...);
 
 
 //-------------------private functions

@@ -93,6 +93,9 @@ extern  WINDOW  *stdscr;
 extern	int		COLORS;
 extern	int		COLOR_PAIRS;
 
+#define LINES stdscr->_size._y
+#define LINES stdscr->_size._x
+
 extern  WINDOW*	initscr			(void);
 extern	WINDOW* newwin			(int, int, int, int);
 extern	int		delwin			(WINDOW *);
@@ -229,7 +232,7 @@ extern	int		intrflush		(WINDOW *, bool);
 extern	int		keypad			(WINDOW *, bool);
 extern	int		leaveok			(WINDOW *, bool);
 extern	int		scanw			(const char *, ...);
-extern	int		wscanw			(WINDOW *, const char *, ...)
+extern	int		wscanw			(WINDOW *, const char *, ...);
 
 
 
