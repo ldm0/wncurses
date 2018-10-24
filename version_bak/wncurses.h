@@ -12,12 +12,14 @@
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
 
-#define ACS_VLINE			'|'
-#define ACS_HLINE			'-'
-#define ACS_ULCORNER		'┌'
-#define ACS_URCORNER		'┐'
-#define ACS_BLCORNER		'└'
-#define ACS_BRCORNER		'┘'
+//support the unicode by adding L
+#define ACS_VLINE			L'│'
+#define ACS_HLINE			L'─'
+#define ACS_ULCORNER		L'┌'
+#define ACS_URCORNER		L'┐'
+#define ACS_BLCORNER		L'└'
+#define ACS_BRCORNER		L'┘'
+
 
 
 //The Windows console only provides 3 bits for colors

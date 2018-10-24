@@ -13,7 +13,7 @@ initscr				(void)
 	CONSOLE_SCREEN_BUFFER_INFO  console_info;
 
 	if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info))
-		ERROR(cannot get console info!);
+		ERROR_LOG(cannot get console info!);
 
 	stdscr = newwin(
 		console_info.srWindow.Bottom - console_info.srWindow.Top + 1,
@@ -23,10 +23,10 @@ initscr				(void)
 	);
 
 	if (!stdscr)
-		ERROR(cannot create the stdscr);
+		ERROR_LOG(cannot create the stdscr);
 
 	if (!SetConsoleActiveScreenBuffer(stdscr->_swapbuffer[SWAPBUFFER_FRONT]))
-		ERROR(cannot set the active screen buffer);
+		ERROR_LOG(cannot set the active screen buffer);
 
 	return stdscr;
 }

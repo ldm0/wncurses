@@ -3,7 +3,9 @@
 void test_clrtobot()
 {
 	initscr();
-	printw("hahha\nas;ldkjfal;skjdfl;kasjsdf\nz,xmcnv,mzxci\nadskfm\nasdfij");
+	for (int y = 0; y < LINES; ++y)
+		for (int x = 0; x < COLS; ++x)
+			addch('h');
 	getch();
 	move(2,2);
 	getch();

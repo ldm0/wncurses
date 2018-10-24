@@ -1063,8 +1063,10 @@ wclrtobot			(WINDOW *window)
 	DWORD _written_length;
 
 	FillConsoleOutputCharacter(
+		//BUG--fixed, handle should be backbuffer
 		GetStdHandle(STD_OUTPUT_HANDLE),
 		window->_bkgd,
+		//BUG--fixed, size should be a lot more larger
 		(window->_size._y) - (_tmp_cur_pos._y),
 		_coord_create(_tmp_cur_pos._y, _tmp_cur_pos._x),
 		&_written_length
@@ -1089,6 +1091,8 @@ wclrtoeol			(WINDOW *window)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
 
+	//BUG--shouldn't clear the whole line, 
+	//supposed to clear the cells after the cursor in corrent line
 	if (wmove(window, _tmp_cur_pos._y, 0) == ERR)
 		return ERR;
 	

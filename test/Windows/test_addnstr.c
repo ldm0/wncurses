@@ -10,7 +10,7 @@ void test_addnstr()
 	refresh();
 	getch();
 	clear();
-	//if when the attr is biger than the str length
+	//if when the attr is bigger than the str length
 	//the attr is the same as the -1
 	//ans yes
 	addnstr(str,200);
