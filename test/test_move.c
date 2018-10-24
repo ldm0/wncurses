@@ -1,7 +1,6 @@
-#include<ncurses.h>
-#include<unistd.h>
+#include<wncurses.h>
 
-int main()
+void test_move()
 {
 	initscr();
 	getch();
@@ -9,7 +8,6 @@ int main()
 	//yes
 	
 	move(3,3);
-	sleep(3);
 	getch();
 	endwin();
 }

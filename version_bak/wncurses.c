@@ -2107,6 +2107,7 @@ _waddch_noimmed				(WINDOW *window, chtype input)
 	};
 
 	//Without the judgemet, actually the '\r' and '\n'can be print to the screen but seems like a square
+	//BUG--fixed in refactored version.
 	if (input == '\r')
 		window->_cur._x = 0;
 	else if (input == '\n'){

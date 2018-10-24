@@ -1,6 +1,6 @@
-#include<ncurses.h>
+#include<wncurses.h>
 
-int main()
+void test_curs_set()
 {
 	initscr();
 	curs_set(0);

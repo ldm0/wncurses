@@ -1,6 +1,6 @@
-#include<ncurses.h>
+#include<wncurses.h>
 
-int main()
+void test_addnstr()
 {
 	char str[]="hello\nhello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello  \nworld";
 	initscr();

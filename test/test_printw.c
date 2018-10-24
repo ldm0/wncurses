@@ -1,12 +1,13 @@
 #include<wncurses.h>
 
-void test_border()
+void test_printw(void)
 {
 	initscr();
-	border(0,0,0,0,0,0,0,0);
-	getch();
+	addstr("hello?\n");
 	refresh();
 	getch();
-	//box(
+	printw("hello?");
+	refresh();
+	getch();
 	endwin();
 }

@@ -1,8 +1,8 @@
-#include<ncurses.h>
+#include<wncurses.h>
 #include<stdio.h>
 
 
-int main()
+void test_baudrate()
 {
 	printf("baudrate with no initscr(): %d",baudrate());
 	getchar();
