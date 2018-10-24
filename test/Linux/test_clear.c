@@ -1,6 +1,6 @@
-#include<wncurses.h>
+#include<ncurses.h>
 
-void test_clear()
+int main()
 {
 	initscr();
 	addstr("What the f**k?\n");

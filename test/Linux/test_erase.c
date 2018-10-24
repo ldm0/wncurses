@@ -1,6 +1,6 @@
-#include<wncurses.h>
+#include<ncurses.h>
 
-void test_erase()
+int main()
 {
 	initscr();
 	printw("akldsjflkasldkfj;lasd");
