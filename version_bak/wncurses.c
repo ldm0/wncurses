@@ -1038,6 +1038,7 @@ erase				(void)
 int
 werase				(WINDOW *window)
 {
+	//BUG--dont move to (0, 0), fixed in refactored version
 	if (_clear_buffer(
 		window->_swapbuffer[SWAPBUFFER_BACK],
 		window->_bkgd) == FALSE)
