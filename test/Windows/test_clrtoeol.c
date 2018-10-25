@@ -7,8 +7,6 @@ void test_clrtoeol()
 	getch();
 	move(2,2);
 	getch();
-	//if take effect instantly?
-	//yes
 	clrtoeol();
 	getch();
 	refresh();

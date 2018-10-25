@@ -21,7 +21,6 @@ _wrefresh_pure		(WINDOW *window)
 
 	_swapbuffer_swap(&(window->_swapbuffer[SWAPBUFFER_BACK]), &(window->_swapbuffer[SWAPBUFFER_FRONT]));
 
-	//This function call is essential
 	SetConsoleActiveScreenBuffer(
 		stdscr->_swapbuffer[SWAPBUFFER_FRONT]);
 
@@ -65,7 +64,7 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 {
 	WINDOW *_tmp_window = (WINDOW *)malloc(sizeof(WINDOW));
 	if (_tmp_window == NULL)
-		ERROR(cannot malloc the window struct);
+		ERROR_LOG(cannot malloc the window struct);
 
 	_coord_init(&_tmp_window->_size, nlines, ncols);
 	_coord_init(&_tmp_window->_cur, begin_y, begin_x);
@@ -97,7 +96,7 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 		||
 		_tmp_window->_swapbuffer[SWAPBUFFER_BACK] == INVALID_HANDLE_VALUE
 		)
-		ERROR(cannot create console screen buffer);
+		ERROR_LOG(cannot create console screen buffer);
 	if (
 		!SetConsoleScreenBufferSize (
 			_tmp_window->_swapbuffer[SWAPBUFFER_FRONT],
@@ -109,12 +108,12 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 			_coord_create(_tmp_window->_size.Y, _tmp_window->_size.X)
 		)
 		)
-		ERROR(cannot set screen buffer size);
+		ERROR_LOG(cannot set screen buffer size);
 
 	if (!_swapbuffer_clear(_tmp_window->_swapbuffer[SWAPBUFFER_FRONT], ' '))
-		ERROR(cannot clear the front buffer);
+		ERROR_LOG(cannot clear the front buffer);
 	if (!_swapbuffer_clear(_tmp_window->_swapbuffer[SWAPBUFFER_BACK], ' '))
-		ERROR(cannot clear the back buffer);
+		ERROR_LOG(cannot clear the back buffer);
 
 	return _tmp_window;
 }

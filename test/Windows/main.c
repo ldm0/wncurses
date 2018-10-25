@@ -1,10 +1,8 @@
 #include<wncurses.h>
 
-void test_printw();
-//void test_helloworld();
+void test_erase();
 
 int main()
 {
-	test_printw();
-	//test_helloworld();
+	test_erase();
 }

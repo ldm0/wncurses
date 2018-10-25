@@ -1,5 +1,5 @@
-#include"wncurses.h"
 #include"cursor.h"
+#include"window.h"
 
 int
 move				(int y, int x)
@@ -17,5 +17,27 @@ wmove				(WINDOW *window, int y, int x)
 		if (!_wrefresh_pure(window))
 			return ERR;
 
+	return OK;
+}
+
+int
+curs_set			(int input)
+{
+	//not every window has a state, so I don't place the state in the WINDOW struct
+	//I let the windows to store the cursor state
+	CONSOLE_CURSOR_INFO _tmp_cur_info;
+	if (!GetConsoleCursorInfo(stdscr->_swapbuffer[SWAPBUFFER_BACK], &_tmp_cur_info))
+		return ERR;
+	if (input == 0) {
+		_tmp_cur_info.bVisible = FALSE;
+	} else if (input == 1) {
+		_tmp_cur_info.bVisible = TRUE;
+		_tmp_cur_info.dwSize = 1;
+	} else if (input == 2) {
+		_tmp_cur_info.bVisible = TRUE;
+		_tmp_cur_info.dwSize = 100;
+	}
+	if (!SetConsoleCursorInfo(stdscr->_swapbuffer[SWAPBUFFER_BACK], &_tmp_cur_info))
+		return ERR;
 	return OK;
 }

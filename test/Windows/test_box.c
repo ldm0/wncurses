@@ -9,5 +9,4 @@ void test_box()
     getch();
 
     endwin();
-    return(0);
 }

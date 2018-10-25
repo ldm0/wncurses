@@ -2,7 +2,6 @@
 
 void test_flash()
 {
-	flash();
 	initscr();
 	flash();
 	getch();

@@ -21,6 +21,7 @@ int					wrefresh			(WINDOW *window);
 int					wnoutrefresh		(WINDOW *window);
 int					doupdate			(void);
 int					redrawwin			(WINDOW *window);
+//BUG--typo fix, the wredrawwin should be wredrawln
 int					wredrawwin			(WINDOW *window, int beg_line, int num_lines);
 int					addch				(chtype input);
 int					waddch				(WINDOW *window, chtype input);
@@ -929,6 +930,7 @@ int
 whline				(WINDOW *window, chtype ch, int n)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
+	//BUG--fixed, shouldn't +1
 	int _length = MIN(n, (window->_size._x) - (window->_cur._x) + 1);
 	for (int i = 0; i < _length; ++i)
 	 	if(waddch(window,ch) == ERR)
@@ -965,6 +967,7 @@ int
 wvline				(WINDOW *window, chtype ch, int n)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
+	//BUG--fixed, the xxxx+n-1 are supposed to be xxxxx+n
 	for (int i = _tmp_cur_pos._y; i < MIN(_tmp_cur_pos._y + n - 1, window->_size._y); ++i)
 		if (!mvwaddch(window, i, _tmp_cur_pos._x, ch))
 			return ERR;
@@ -1038,6 +1041,7 @@ erase				(void)
 int
 werase				(WINDOW *window)
 {
+	//BUG--dont move to (0, 0), fixed in refactored version
 	if (_clear_buffer(
 		window->_swapbuffer[SWAPBUFFER_BACK],
 		window->_bkgd) == FALSE)
@@ -1062,8 +1066,10 @@ wclrtobot			(WINDOW *window)
 	DWORD _written_length;
 
 	FillConsoleOutputCharacter(
+		//BUG--fixed, handle should be backbuffer
 		GetStdHandle(STD_OUTPUT_HANDLE),
 		window->_bkgd,
+		//BUG--fixed, size should be a lot more larger
 		(window->_size._y) - (_tmp_cur_pos._y),
 		_coord_create(_tmp_cur_pos._y, _tmp_cur_pos._x),
 		&_written_length
@@ -1088,6 +1094,8 @@ wclrtoeol			(WINDOW *window)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
 
+	//BUG--shouldn't clear the whole line, 
+	//supposed to clear the cells after the cursor in corrent line
 	if (wmove(window, _tmp_cur_pos._y, 0) == ERR)
 		return ERR;
 	

@@ -7,6 +7,5 @@ void test_border()
 	getch();
 	refresh();
 	getch();
-	//box(
 	endwin();
 }

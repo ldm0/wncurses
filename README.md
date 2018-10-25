@@ -1,7 +1,9 @@
 # wncurses
 ![progress](http://progressed.io/bar/40?title=progress) ![build](https://img.shields.io/badge/build-passing-brightgreen.svg) ![license](https://img.shields.io/badge/license-WTFPL-brightgreen.svg)
 
-NCURSES in MS cmd.
+NCURSES in MS command line.
+
+![](pics/ball.gif)
 
 ### Functions implemented(132/330)
 
@@ -18,6 +20,9 @@ The problems are way more than I thought. (18/9/11)
 (Complain)The Windows console only provides 3 bits to constrol the color, which means there are only 8 colors.
 
 Currently refactoring(18/9/23)
+
+After a month, the refactor begins(18/10/23)
+
 
 ###TO DO LIST
 - [x] scanw
