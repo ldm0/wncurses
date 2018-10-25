@@ -110,9 +110,9 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 		)
 		ERROR_LOG(cannot set screen buffer size);
 
-	if (!_swapbuffer_clear(_tmp_window->_swapbuffer[SWAPBUFFER_FRONT], ' '))
+	if (_swapbuffer_clear(_tmp_window->_swapbuffer[SWAPBUFFER_FRONT], ' ') == ERR)
 		ERROR_LOG(cannot clear the front buffer);
-	if (!_swapbuffer_clear(_tmp_window->_swapbuffer[SWAPBUFFER_BACK], ' '))
+	if (_swapbuffer_clear(_tmp_window->_swapbuffer[SWAPBUFFER_BACK], ' ') == ERR)
 		ERROR_LOG(cannot clear the back buffer);
 
 	return _tmp_window;

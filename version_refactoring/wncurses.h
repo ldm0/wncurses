@@ -6,8 +6,8 @@
 
 #define TRUE 1
 #define FALSE 0
-#define OK 1
-#define ERR 0
+#define OK 0
+#define ERR -1
 
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
@@ -58,6 +58,7 @@ extern	int addstr (const char *input);
 extern	int addnstr (const char *input, int n);
 extern	int waddstr (WINDOW *window, const char *input);
 extern	int waddnstr (WINDOW *window, const char *input, int n);
+extern	int mvaddstr (int y, int x, const char *input);
 extern	int mvaddnstr (int y, int x, const char *input, int n);
 extern	int mvwaddstr (WINDOW *window, int y, int x, const char *input);
 extern	int mvwaddnstr (WINDOW *window, int y, int x, const char *input, int n);
@@ -72,13 +73,33 @@ extern	int box (WINDOW *window, chtype verch, chtype horch);
 
 extern	int flash (void);
 extern	int hline (chtype ch, int n);
-extern	int mvhline (int y, int x, chtype ch, int n);
 extern	int whline (WINDOW *window, chtype ch, int n);
-extern	int mvwhline (WINDOW *window, int y, int x, chtype ch, int n);
 extern	int vline (chtype ch, int n);
-extern	int mvvline (int y, int x, chtype ch, int n);
 extern	int wvline (WINDOW *window, chtype ch, int n);
+extern	int mvhline (int y, int x, chtype ch, int n);
+extern	int mvvline (int y, int x, chtype ch, int n);
+extern	int mvwhline (WINDOW *window, int y, int x, chtype ch, int n);
 extern	int mvwvline (WINDOW *window, int y, int x, chtype ch, int n);
+//instr() is different from insstr(). XD
+extern	int instr (char *output);
+extern	int innstr (char *output, int n);
+extern	int winstr (WINDOW *window, char *output);
+extern	int winnstr (WINDOW *window, char *output, int n);
+extern	int mvinstr (int y, int x, char *input);
+extern	int mvinnstr (int y, int x, char *input, int n);
+extern	int mvwinstr (WINDOW *, int y, int x, char *input);
+extern	int mvwinnstr (WINDOW *, int y, int x, char *input, int n);
+
+extern	int delch (void);
+extern	int wdelch (WINDOW *window);
+extern	int mvdelch (int y, int x);
+extern	int mvwdelch (WINDOW *window, int y, int x);
+extern	int deleteln (void);
+extern	int wdeleteln (WINDOW *window);
+extern	int insertln (void);
+extern	int winsertln (WINDOW *window);
+extern	int insdelln (int n);
+extern	int winsdelln (WINDOW *window, int n);
 
 extern	int erase (void);
 extern	int werase (WINDOW *window);
@@ -96,6 +117,7 @@ extern	void wbkgdset (WINDOW *window, const chtype input);
 extern	int move (int y, int x);
 extern	int wmove (WINDOW *window, int y, int x);
 extern	int curs_set (int input);
+extern	int mvcur (int oldrow, int oldcol, int newrow, int newcol);
 
 extern	int getch (void);
 extern	int wgetch (WINDOW *window);
@@ -103,5 +125,31 @@ extern	int wgetch (WINDOW *window);
 
 extern	int clearok (WINDOW *window, BOOL n);
 extern	int baudrate (void);
+extern	int mvwin (void);
+extern	int wnoutrefresh (WINDOW *window);
+extern	int doupdate (void);
+extern	int redrawwin (WINDOW *window);
+extern	int wredrawln (WINDOW *window, int beg_line, int num_lines);
+extern	int start_color(void);
+extern	BOOL has_colors(void);
+extern	BOOL can_change_color(void);
+extern	int init_pair (short pair, short f, short b);
+extern	int init_color (short color, short r, short g, short b);
+extern	int color_content (short color, short *r, short *g, short *b);
+extern	int pair_content (short pair, short *f, short *b);
+
+extern	int getcurx (const WINDOW *window);
+extern	int getcury (const WINDOW *window);
+extern	int getbegx (const WINDOW *window);
+extern	int getbegy (const WINDOW *window);
+extern	int getmaxx (const WINDOW *window);
+extern	int getmaxy (const WINDOW *window);
+extern	int getparx (const WINDOW *window);
+extern	int getpary (const WINDOW *window);
+extern	chtype getbkgd (const WINDOW *window);
+extern	int echo (void);
+extern	int noecho (void);
+
+extern	int beep (void);
 
 #endif

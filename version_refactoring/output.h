@@ -14,6 +14,7 @@ int addstr (const char *input);
 int addnstr (const char *input, int n);
 int waddstr (WINDOW *window, const char *input);
 int waddnstr (WINDOW *window, const char *input, int n);
+int mvaddstr (int y, int x, const char *input);
 int mvaddnstr (int y, int x, const char *input, int n);
 int mvwaddstr (WINDOW *window, int y, int x, const char *input);
 int mvwaddnstr (WINDOW *window, int y, int x, const char *input, int n);
@@ -36,4 +37,3 @@ int vline (chtype ch, int n);
 int mvvline (int y, int x, chtype ch, int n);
 int wvline (WINDOW *window, chtype ch, int n);
 int mvwvline (WINDOW *window, int y, int x, chtype ch, int n);
-

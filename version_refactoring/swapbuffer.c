@@ -83,7 +83,7 @@ wbkgd				(WINDOW *window, chtype input)
 	window->_bkgd_ch = input;
 
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 
 	return OK;

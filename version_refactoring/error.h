@@ -16,6 +16,9 @@
 	if (!(x))\
 		__debugbreak();\
 }
+#else
+#define ERROR_LOG(x) { }
+#define ASSERT(x) { }
 
 #endif
 #endif

@@ -1,5 +1,6 @@
 #include"cursor.h"
 #include"window.h"
+#include"swapbuffer.h"
 
 int
 move				(int y, int x)
@@ -14,7 +15,7 @@ wmove				(WINDOW *window, int y, int x)
 	window->_cur.X = x;
 
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 
 	return OK;
@@ -39,5 +40,16 @@ curs_set			(int input)
 	}
 	if (!SetConsoleCursorInfo(stdscr->_swapbuffer[SWAPBUFFER_BACK], &_tmp_cur_info))
 		return ERR;
+	return OK;
+}
+
+int
+mvcur				(int oldrow, int oldcol, int newrow, int newcol)
+{
+	stdscr->_cur.X += newcol - oldcol;
+	stdscr->_cur.Y += newrow - oldrow;
+	if (stdscr->_immed)
+		if (_wrefresh_pure(stdscr) == ERR)
+			return ERR;
 	return OK;
 }

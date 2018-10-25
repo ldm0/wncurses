@@ -1,8 +1,8 @@
 #include<wncurses.h>
 
-void test_erase();
+void test_deleteln();
 
 int main()
 {
-	test_erase();
+	test_deleteln();
 }

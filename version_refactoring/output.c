@@ -15,7 +15,7 @@ _vwprintw			(WINDOW *window, const char *input, va_list args)
 		return ERR;
 	if (vsprintf_s(_buffer, window->_size.X * window->_size.Y, input, args) < 0)
 		return ERR;
-	if (!waddstr(window, _buffer))
+	if (waddstr(window, _buffer) == ERR)
 		return ERR;
 	free(_buffer);
 	return OK;
@@ -72,11 +72,11 @@ int
 waddch				(WINDOW* window, chtype input)
 {
 
-	if (!_waddch_pure(window, input))
+	if (_waddch_pure(window, input) == ERR)
 		return ERR;
 
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 
 	return OK;
@@ -107,7 +107,8 @@ mvaddch				(int y, int x, chtype input)
 int
 mvwaddch			(WINDOW *window, int y, int x, chtype input)
 {
-	wmove(window, y, x);
+	if (wmove(window, y, x) == ERR)
+		return ERR;
 	return waddch(window, input);
 }
 
@@ -143,7 +144,7 @@ waddnstr			(WINDOW *window, const char *input, int n)
 			if (_waddch_pure(window, input[i]) == ERR)
 				return ERR;
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 	return OK;
 }
@@ -182,7 +183,7 @@ printw				(const char *input, ...)
 	int _result = _vwprintw(stdscr, input, _args);
 	va_end(_args);
 	if (stdscr->_immed)
-		if (!_wrefresh_pure(stdscr))
+		if (_wrefresh_pure(stdscr) == ERR)
 			return ERR;
 	return _result;
 }
@@ -196,7 +197,7 @@ mvprintw			(int y, int x, const char *input, ...)
 	int _result = _vwprintw(stdscr, input, _args);
 	va_end(_args);
 	if (stdscr->_immed)
-		if (!_wrefresh_pure(stdscr))
+		if (_wrefresh_pure(stdscr) == ERR)
 			return ERR;
 	return _result;
 }
@@ -209,7 +210,7 @@ wprintw				(WINDOW *window, const char *input, ...)
 	int _result = _vwprintw(window, input, _args);
 	va_end(_args);
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 	return _result;
 }
@@ -223,7 +224,7 @@ mvwprintw			(WINDOW *window, int y, int x, const char *input, ...)
 	int _result = _vwprintw(window, input, _args);
 	va_end(_args);
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 	return _result;
 }
@@ -287,10 +288,10 @@ wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype t
 		mvwaddch(window, y, window->_size.X - 1, rs);
 	}
 
-	if (!wmove(window, _tmp_cur_pos.Y, _tmp_cur_pos.X))
+	if (wmove(window, _tmp_cur_pos.Y, _tmp_cur_pos.X) == ERR)
 		return ERR;
 	if (window->_immed)
-		if (!wrefresh(window))
+		if (wrefresh(window) == ERR)
 			return ERR;
 	return OK;
 }
@@ -344,12 +345,12 @@ int
 whline				(WINDOW *window, chtype ch, int n)
 {
 	COORD _tmp_cur_pos = window->_cur;
-	int _length = MIN(n, (window->_size.Y) - (window->_cur.Y) + 1);
+	int _length = MIN(n, (window->_size.X) - (window->_cur.X));
 	for (int i = 0; i < _length; ++i)
 		if (waddch(window, ch) == ERR)
 			return ERR;
 	if (window->_immed)
-		if (!wrefresh(window))
+		if (wrefresh(window) == ERR)
 			return ERR;
 	return wmove(window, _tmp_cur_pos.Y, _tmp_cur_pos.X);
 }
@@ -380,13 +381,13 @@ int
 wvline				(WINDOW *window, chtype ch, int n)
 {
 	COORD _tmp_cur_pos = window->_cur;
-	for (int i = _tmp_cur_pos.Y; i < MIN(_tmp_cur_pos.Y + n - 1, window->_size.Y); ++i)
-		if (!mvwaddch(window, i, _tmp_cur_pos.X, ch))
+	for (int i = _tmp_cur_pos.Y; i < MIN(_tmp_cur_pos.Y + n, window->_size.Y); ++i)
+		if (mvwaddch(window, i, _tmp_cur_pos.X, ch) == ERR)
 			return ERR;
-	if (!wmove(window, _tmp_cur_pos.Y, _tmp_cur_pos.X))
+	if (wmove(window, _tmp_cur_pos.Y, _tmp_cur_pos.X) == ERR)
 		return ERR;
 	if (window->_immed)
-		if (!wrefresh(window))
+		if (wrefresh(window) == ERR)
 			return ERR;
 	return OK;
 }

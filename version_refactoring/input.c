@@ -1,6 +1,7 @@
 #include"input.h"
 #include"output.h"
 #include"window.h"
+#include"private_var.h"
 
 int
 _wgetch_pure(WINDOW *window)
@@ -44,7 +45,13 @@ wgetch				(WINDOW *window)
 			 ||
 			 _tmp_input_record.Event.KeyEvent.bKeyDown == FALSE);
 
-	_waddch_pure(window, _tmp_input_record.Event.KeyEvent.uChar.UnicodeChar);
+	//The special case will definitely increase in the future.
+	//and will processed in a function.
+	if (_tmp_input_record.Event.KeyEvent.uChar.AsciiChar != '\r'
+		&&
+		_echo)
+		if (_waddch_pure(window, _tmp_input_record.Event.KeyEvent.uChar.UnicodeChar) == ERR)
+			return ERR;
 
 	if (_wrefresh_pure(window) == ERR)
 		return ERR;

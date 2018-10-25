@@ -18,10 +18,10 @@ werase				(WINDOW *window)
 		window->_swapbuffer[SWAPBUFFER_BACK],
 		window->_bkgd_ch) == FALSE)
 		return ERR;
-	if (wmove(window, 0, 0))
+	if (wmove(window, 0, 0) == ERR)
 		return ERR;
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 	return OK;
 }
@@ -35,7 +35,7 @@ clear				(void)
 int
 wclear				(WINDOW *window)
 {
-	if (!werase(window))
+	if (werase(window) == ERR)
 		return ERR;
 	return clearok(window, TRUE);
 }
@@ -65,7 +65,7 @@ wclrtobot			(WINDOW *window)
 	if (wmove(window, _tmp_cur_pos.Y, _tmp_cur_pos.X) == ERR)
 		return ERR;
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 	return OK;
 }
@@ -89,7 +89,7 @@ wclrtoeol			(WINDOW *window)
 		return ERR;
 
 	if (window->_immed)
-		if (!_wrefresh_pure(window))
+		if (_wrefresh_pure(window) == ERR)
 			return ERR;
 	return OK;
 }
