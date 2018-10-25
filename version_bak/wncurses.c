@@ -929,6 +929,7 @@ int
 whline				(WINDOW *window, chtype ch, int n)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
+	//BUG--fixed, shouldn't +1
 	int _length = MIN(n, (window->_size._x) - (window->_cur._x) + 1);
 	for (int i = 0; i < _length; ++i)
 	 	if(waddch(window,ch) == ERR)
@@ -965,6 +966,7 @@ int
 wvline				(WINDOW *window, chtype ch, int n)
 {
 	COORD_S _tmp_cur_pos = window->_cur;
+	//BUG--fixed, the xxxx+n-1 are supposed to be xxxxx+n
 	for (int i = _tmp_cur_pos._y; i < MIN(_tmp_cur_pos._y + n - 1, window->_size._y); ++i)
 		if (!mvwaddch(window, i, _tmp_cur_pos._x, ch))
 			return ERR;
