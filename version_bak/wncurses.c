@@ -21,6 +21,7 @@ int					wrefresh			(WINDOW *window);
 int					wnoutrefresh		(WINDOW *window);
 int					doupdate			(void);
 int					redrawwin			(WINDOW *window);
+//BUG--typo fix, the wredrawwin should be wredrawln
 int					wredrawwin			(WINDOW *window, int beg_line, int num_lines);
 int					addch				(chtype input);
 int					waddch				(WINDOW *window, chtype input);
