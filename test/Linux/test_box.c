@@ -1,6 +1,6 @@
-#include <wncurses.h>
+#include <ncurses.h>
 
-void test_box()
+int main()
 {
     initscr();
 

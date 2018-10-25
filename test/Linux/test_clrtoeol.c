@@ -1,6 +1,6 @@
-#include<wncurses.h>
+#include<ncurses.h>
 
-void test_clrtoeol()
+int main()
 {
 	initscr();
 	addstr("hahha\nas;ldkjfal;skjdfl;kasjsdf\nz,xmcnv,mzxci\nadskfm\nasdfij");

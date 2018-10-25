@@ -1,6 +1,5 @@
-#include<wncurses.h>
-
-void test_clrtobot()
+#include<ncurses.h>
+int main()
 {
 	initscr();
 	printw("hahha\nas;ldkjfal;skjdfl;kasjsdf\nz,xmcnv,mzxci\nadskfm\nasdfij");
