@@ -1,10 +1,9 @@
-#include<wncurses.h>
+#include<ncurses.h>
 
-void test_flash()
+int main()
 {
-	flash();
 	initscr();
+	while(1)
 	flash();
-	getch();
 	endwin();
 }
