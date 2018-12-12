@@ -11,21 +11,4 @@ Recently found that the ncurses is really convient for building beautiful progra
 
 However there is no a windows version. What I found now is only a uncomplete version: <http://github.com/justinmeza/wincurses>
 
-If this is built up, It will be fairly easy to transfer some linux applications to the windows console application.
-
-So I decided to build it(hopeully don't mess up). (18/8/23)
-
-The problems are way more than I thought. (18/9/11)
-
-(Complain)The Windows console only provides 3 bits to constrol the color, which means there are only 8 colors.
-
-Currently refactoring(18/9/23)
-
-After a month, the refactor begins(18/10/23)
-
-
-###TO DO LIST
-- [x] scanw
-- [x] keypad
-- [x] intrflush
-- [x] leaveok
+If this is built up, It will be fairly easy to transplant some linux applications to the windows console application.
