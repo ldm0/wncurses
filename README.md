@@ -3,10 +3,10 @@
 
 NCURSES library in MS command line.
 
-transplant the sl
-![](pics/sl.gif)
-ray cast sample
-![](pics/ball.gif)
+transplant the "sl":
+![transplant the "sl"](pics/sl.gif)
+raycast sample:
+![raycast sample](pics/ball.gif)
 
 ### Functions implemented(132/330)
 
