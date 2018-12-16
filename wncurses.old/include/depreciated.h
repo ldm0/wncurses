@@ -4,6 +4,7 @@
 
 int clearok (WINDOW *window, BOOL n);
 int baudrate (void);
+int mvwin (void);
 int wnoutrefresh (WINDOW *window);
 int doupdate (void);
 int redrawwin (WINDOW *window);

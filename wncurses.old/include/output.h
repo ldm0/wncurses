@@ -1,7 +1,9 @@
 #pragma once
 #include"wncurses.h"
 
-int _waddch_raw (WINDOW *window, chtype input);
+
+
+int _waddch_pure (WINDOW *window, chtype input);
 
 int addch (chtype input);
 int waddch (WINDOW* window, chtype input);
@@ -26,7 +28,6 @@ int border (chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, ch
 int wborder (WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
 int box (WINDOW *window, chtype verch, chtype horch);
 int flash (void);
-int beep (void);
 
 int hline (chtype ch, int n);
 int mvhline (int y, int x, chtype ch, int n);

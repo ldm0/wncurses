@@ -41,7 +41,7 @@ float ball(struct vec2 coord, float time)
 		{0.f, 0.f, -10.f},
 		{uv.x, uv.y, 0.f}
 	};
-	struct vec3 p = {cosf(time/20.f), 0.f, 50.f + 25.f * sinf(time/20)};
+	struct vec3 p = {cosf(time/20.f), 0.f, 50.f + 25.f * sinf(time/20.f)};
 	struct vec3 tmp1;
 	tmp1.x = r.d.x - r.o.x;
 	tmp1.y = r.d.y - r.o.y;
@@ -64,10 +64,10 @@ void test_ball(void)
 		for(int y = 0; y < LINES; ++y) {
 			move(y, 0);
 			for (int x = 0; x < COLS; ++x) {
-				//ray tracing
-				uv.x = (float)x / (float)COLS- .5f;
-				uv.y = (float)y / (float)LINES - .5f;
-				addch(ball(uv,time / 50.f) > .9f ? ' ' : '6');
+				//ray casting
+				uv.x = ((float)x - COLS / 2) / (float)COLS;
+				uv.y = ((float)y - LINES / 2) / (float)LINES / 2.f;
+				addch('a' + (ball(uv,time / 50.f) * 10));
 			}
 		}
 		refresh();

@@ -7,15 +7,18 @@
 
 #ifdef _DEBUG
 
-#define AN_ERROR() {\
-    __debugbreak();\
+#define ERROR_LOG(x) {\
+	fputs(#x, stdin);\
+	exit(1);\
 }
+
 #define ASSERT(x) {\
 	if (!(x))\
 		__debugbreak();\
 }
 #else
-#define AN_ERROR(x) { }
+#define ERROR_LOG(x) { }
 #define ASSERT(x) { }
+
 #endif
 #endif

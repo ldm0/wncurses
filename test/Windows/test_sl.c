@@ -83,10 +83,11 @@ void option(char *str)
 //int main(int argc, char *argv[])
 void test_sl()
 {
-    int x, i;
+	int x;
 
 /*
-for (i = 1; i < argc; ++i) {
+	int i;
+	for (i = 1; i < argc; ++i) {
         if (*argv[i] == '-') {
             option(argv[i] + 1);
         }

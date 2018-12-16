@@ -1,6 +1,5 @@
-#include"coord.h"
 #include"wncurses.h"
-#include<Windows.h>
+#include"coord.h"
 
 COORD
 _coord_create	(int y, int x)
@@ -11,7 +10,7 @@ _coord_create	(int y, int x)
 	return _tmp;
 }
 
-int
+BOOL
 _coord_init		(COORD *coord, int y, int x)
 {
 	if (!coord)

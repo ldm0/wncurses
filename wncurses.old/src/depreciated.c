@@ -17,6 +17,12 @@ baudrate			(void)
 }
 
 int
+mvwin				(void)
+{
+	return OK;
+}
+
+int
 wnoutrefresh		(WINDOW *window)
 {
 	return OK;

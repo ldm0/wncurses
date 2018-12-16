@@ -2,7 +2,6 @@
 
 #ifndef __WNCURSES_H
 #define __WNCURSES_H
-
 #include<windows.h>
 
 #define TRUE 1
@@ -13,38 +12,36 @@
 #define SWAPBUFFER_FRONT	0
 #define SWAPBUFFER_BACK		1
 
-#define ACS_VLINE			L'ï¿½ï¿½'
-#define ACS_HLINE			L'ï¿½ï¿½'
-#define ACS_ULCORNER		L'ï¿½ï¿½'
-#define ACS_URCORNER		L'ï¿½ï¿½'
-#define ACS_BLCORNER		L'ï¿½ï¿½'
-#define ACS_BRCORNER		L'ï¿½ï¿½'
+#define ACS_VLINE			L'©¦'
+#define ACS_HLINE			L'©¤'
+#define ACS_ULCORNER		L'©°'
+#define ACS_URCORNER		L'©´'
+#define ACS_BLCORNER		L'©¸'
+#define ACS_BRCORNER		L'©¼'
 
 
 typedef int BOOL;
 typedef unsigned chtype;
+
 typedef struct _window WINDOW;
+
 struct _window {
-    COORD _pos;
 	COORD _size;
 	COORD _cur;
+	WORD _cur_color;
 	chtype _bkgd_ch;
-	WORD _bkgd_color;    // used in CHAR_INFO.Attribute
 	BOOL _delay;
 	BOOL _immed;
 	BOOL _keypad;
 	BOOL _leaveok;
-    // the copy in the console is the front buffer 
-    // and the buffer below is the back buffer
-    // which is just a koin d of swapbuffer
-    // to swap, copy the back buffer to the front buffer
-    CHAR_INFO *_buffer;
+	HANDLE _swapbuffer[2];
 };
 
 extern WINDOW *stdscr;
 
 #define LINES (stdscr->_size.Y)
 #define COLS (stdscr->_size.X)
+
 
 extern  WINDOW*	initscr (void);
 extern	WINDOW* newwin (int nlines, int ncols, int begin_y, int begin_x);
@@ -128,7 +125,7 @@ extern	int wgetch (WINDOW *window);
 
 extern	int clearok (WINDOW *window, BOOL n);
 extern	int baudrate (void);
-extern	int mvwin (WINDOW *window, int y, int x);
+extern	int mvwin (void);
 extern	int wnoutrefresh (WINDOW *window);
 extern	int doupdate (void);
 extern	int redrawwin (WINDOW *window);
