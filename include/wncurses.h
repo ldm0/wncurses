@@ -29,15 +29,15 @@ struct _window {
 	COORD _size;
 	COORD _cur;
 	chtype _bkgd_ch;
-	WORD _bkgd_color;    // used in CHAR_INFO.Attribute
-	BOOL _delay;
+	// used in CHAR_INFO.Attribute
+	WORD _bkgd_color;    
+	// if delay is negative, blocking read is used.
+	// if delay is zero, nonblocking read is used.
+	// if delay is positive, the read will wait for _delay ms.
+	int _delay; 
 	BOOL _immed;
 	BOOL _keypad;
 	BOOL _leaveok;
-    // the copy in the console is the front buffer 
-    // and the buffer below is the back buffer
-    // which is just a koin d of swapbuffer
-    // to swap, copy the back buffer to the front buffer
     CHAR_INFO *_buffer;
 };
 
@@ -152,6 +152,8 @@ extern	int getpary (const WINDOW *window);
 extern	chtype getbkgd (const WINDOW *window);
 extern	int echo (void);
 extern	int noecho (void);
+extern	void timeout(int delay);
+extern	void wtimeout(WINDOW *window, int delay);
 
 extern	int beep (void);
 

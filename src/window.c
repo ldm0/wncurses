@@ -77,7 +77,8 @@ newwin				(int nlines, int ncols, int begin_y, int begin_x)
 
 	_tmp_window->_bkgd_ch = ' ';
 	_tmp_window->_bkgd_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-	_tmp_window->_delay = TRUE;
+	// the default input is blocking
+	_tmp_window->_delay = -1;
 	_tmp_window->_immed = FALSE;
 	_tmp_window->_keypad = TRUE;
 	_tmp_window->_leaveok = FALSE;

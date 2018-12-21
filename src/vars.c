@@ -105,3 +105,13 @@ noecho				(void)
 	_echo = FALSE;
 	return OK;
 }
+
+void timeout(int delay)
+{
+	stdscr->_delay = delay;
+}
+
+void wtimeout(WINDOW *window, int delay)
+{
+	window->_delay = delay;
+}

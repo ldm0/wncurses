@@ -59,7 +59,7 @@ void test_ball(void)
 	curs_set(0);
 	struct vec2 uv;
 	clock_t time;
-	for(;;) {
+	for (int i = 0; i < 300; ++i) {
 		time = clock();
 		for(int y = 0; y < LINES; ++y) {
 			move(y, 0);
@@ -71,9 +71,8 @@ void test_ball(void)
 			}
 		}
 		refresh();
-		Sleep(100);
+		Sleep(10);
 	}
-	getch();
 	endwin();
 }
 

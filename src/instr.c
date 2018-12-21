@@ -29,7 +29,7 @@ winnstr				(WINDOW *window, char *output, int n)
 		window->_size.X - window->_cur.X
 		: MIN(n, window->_size.X - window->_cur.X);
     for (int i = 0; i < _tmp_length; ++i) 
-        output[i] = window->_buffer[i].Char.AsciiChar;
+        output[i] = window->_buffer[i + window->_cur.Y * window->_size.X + window->_cur.X].Char.AsciiChar;
 	return OK;
 }
 
