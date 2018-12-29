@@ -23,33 +23,6 @@ wnoutrefresh		(WINDOW *window)
 }
 
 int
-doupdate			(void)
-{
-	return OK;
-}
-
-int
-redrawwin			(WINDOW *window)
-{
-	if (!window)
-		return ERR;
-	return OK;
-}
-
-int
-wredrawln			(WINDOW *window, int beg_line, int num_lines)
-{
-	if (!window)
-		return ERR;
-	if (
-		num_lines <= 0
-		||
-		beg_line + num_lines >= window->_size.Y)
-		return ERR;
-	return OK;
-}
-
-int
 start_color			(void)
 {
 	return OK;

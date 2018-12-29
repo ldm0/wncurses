@@ -67,7 +67,7 @@ void test_ball(void)
 				//ray casting
 				uv.x = ((float)x - COLS / 2) / (float)COLS;
 				uv.y = ((float)y - LINES / 2) / (float)LINES / 2.f;
-				addch('a' + (ball(uv,time / 50.f) * 10));
+				addch('a' + (char)(ball(uv,time / 50.f) * 10));
 			}
 		}
 		refresh();

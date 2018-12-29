@@ -11,7 +11,7 @@
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
 static int
-_vwprintw			(WINDOW *window, const char *input, va_list args)
+_vwprintw(WINDOW *window, const char *input, va_list args)
 {
 	int tmp_buffer_length = (int)window->_size.X * window->_size.Y;
 	char *_buffer = (char *)malloc(tmp_buffer_length * sizeof(char));
@@ -27,33 +27,33 @@ _vwprintw			(WINDOW *window, const char *input, va_list args)
 
 
 int
-_waddch_raw		(WINDOW *window, chtype input)
+_waddch_raw(WINDOW *window, chtype input)
 {
-    //Without the judgment, actually the '\r' and '\n' can be print to the screen but seems like a square.
-	//In the getch function, we call the waddch to output the char gotten.
-	//However the message of enter key in windows seems to be '\r' only, different from '\r\n' we always thought.
-	//And to input '\n', you should press ctrl and then press enter.
-    if (input == '\r' || input == '\n') {
+	// Without the judgment, actually the '\r' and '\n' can be print to the screen but seems like a square.
+	// In the getch function, we call the waddch to output the char gotten.
+	// However the message of enter key in windows seems to be '\r' only, different from '\r\n' we always thought.
+	// And to input '\n', you should press ctrl and then press enter.
+	if (input == '\r' || input == '\n') {
 		window->_cur.Y = MIN(window->_cur.Y + 1, window->_size.Y - 1);
-        window->_cur.X = 0;
-    } else {
-        int _ptr = window->_cur.Y * window->_size.X + window->_cur.X;
-        window->_buffer[_ptr].Attributes = window->_bkgd_color;
-        window->_buffer[_ptr].Char.UnicodeChar = input;
-		window	->_cur.X = (window->_cur.X + 1) % (window->_size.X);
+		window->_cur.X = 0;
+	} else {
+		int _ptr = window->_cur.Y * window->_size.X + window->_cur.X;
+		window->_buffer[_ptr].Attributes = window->_bkgd_color;
+		window->_buffer[_ptr].Char.UnicodeChar = input;
+		window->_cur.X = (window->_cur.X + 1) % (window->_size.X);
 		window->_cur.Y = MIN(window->_cur.Y + (window->_cur.X == 0), window->_size.Y - 1);
-    }
-    return OK;
+	}
+	return OK;
 }
 
 int
-addch				(chtype input)
+addch(chtype input)
 {
 	return waddch(stdscr, input);
 }
 
 int
-waddch				(WINDOW* window, chtype input)
+waddch(WINDOW* window, chtype input)
 {
 
 	if (_waddch_raw(window, input) == ERR)
@@ -65,13 +65,13 @@ waddch				(WINDOW* window, chtype input)
 }
 
 int
-mvaddch				(int y, int x, chtype input)
+mvaddch(int y, int x, chtype input)
 {
 	return mvwaddch(stdscr, y, x, input);
 }
 
 int
-mvwaddch			(WINDOW *window, int y, int x, chtype input)
+mvwaddch(WINDOW *window, int y, int x, chtype input)
 {
 	if (wmove(window, y, x) == ERR)
 		return ERR;
@@ -79,25 +79,25 @@ mvwaddch			(WINDOW *window, int y, int x, chtype input)
 }
 
 int
-addstr				(const char *input)
+addstr(const char *input)
 {
 	return waddstr(stdscr, input);
 }
 
 int
-addnstr				(const char *input, int n)
+addnstr(const char *input, int n)
 {
 	return waddnstr(stdscr, input, n);
 }
 
 int
-waddstr				(WINDOW *window, const char *input)
+waddstr(WINDOW *window, const char *input)
 {
 	return waddnstr(window, input, -1);
 }
 
 int
-waddnstr			(WINDOW *window, const char *input, int n)
+waddnstr(WINDOW *window, const char *input, int n)
 {
 	if (n == -1) {
 		for (int i = 0; input[i]; ++i)
@@ -105,7 +105,7 @@ waddnstr			(WINDOW *window, const char *input, int n)
 				return ERR;
 	} else if (n < 0) {
 		return ERR;
-    } else
+	} else
 		for (int i = 0; i < n && input[i]; ++i)
 			if (_waddch_raw(window, input[i]) == ERR)
 				return ERR;
@@ -116,25 +116,25 @@ waddnstr			(WINDOW *window, const char *input, int n)
 }
 
 int
-mvaddstr			(int y, int x, const char *input)
+mvaddstr(int y, int x, const char *input)
 {
 	return mvwaddstr(stdscr, y, x, input);
 }
 
 int
-mvaddnstr			(int y, int x, const char *input, int n)
+mvaddnstr(int y, int x, const char *input, int n)
 {
 	return mvwaddnstr(stdscr, y, x, input, n);
 }
 
 int
-mvwaddstr			(WINDOW *window, int y, int x, const char *input)
+mvwaddstr(WINDOW *window, int y, int x, const char *input)
 {
 	return mvwaddnstr(window, y, x, input, -1);
 }
 
 int
-mvwaddnstr			(WINDOW *window, int y, int x, const char *input, int n)
+mvwaddnstr(WINDOW *window, int y, int x, const char *input, int n)
 {
 	if (wmove(window, y, x) == ERR)
 		return ERR;
@@ -142,7 +142,7 @@ mvwaddnstr			(WINDOW *window, int y, int x, const char *input, int n)
 }
 
 int
-printw				(const char *input, ...)
+printw(const char *input, ...)
 {
 	va_list _args;
 	va_start(_args, input);
@@ -155,7 +155,7 @@ printw				(const char *input, ...)
 }
 
 int
-mvprintw			(int y, int x, const char *input, ...)
+mvprintw(int y, int x, const char *input, ...)
 {
 	move(y, x);
 	va_list _args;
@@ -169,7 +169,7 @@ mvprintw			(int y, int x, const char *input, ...)
 }
 
 int
-wprintw				(WINDOW *window, const char *input, ...)
+wprintw(WINDOW *window, const char *input, ...)
 {
 	va_list _args;
 	va_start(_args, input);
@@ -182,7 +182,7 @@ wprintw				(WINDOW *window, const char *input, ...)
 }
 
 int
-mvwprintw			(WINDOW *window, int y, int x, const char *input, ...)
+mvwprintw(WINDOW *window, int y, int x, const char *input, ...)
 {
 	wmove(window, y, x);
 	va_list _args;
@@ -197,7 +197,7 @@ mvwprintw			(WINDOW *window, int y, int x, const char *input, ...)
 
 
 int
-border				(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
+border(chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
 	return wborder(stdscr, ls, rs, ts, bs, tl, tr, bl, br);
 }
@@ -214,7 +214,7 @@ bl - bottom left-hand corner, and
 br - bottom right-hand corner.
 */
 int
-wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
+wborder(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
 	if (!ls)
 		ls = ACS_VLINE;
@@ -263,37 +263,37 @@ wborder				(WINDOW *window, chtype ls, chtype rs, chtype ts, chtype bs, chtype t
 }
 
 int
-box					(WINDOW *window, chtype verch, chtype horch)
+box(WINDOW *window, chtype verch, chtype horch)
 {
 	return wborder(window, verch, verch, horch, horch, 0, 0, 0, 0);
 }
 
 int
-flash				(void)
+flash(void)
 {
-    int tmp_buffer_length = stdscr->_size.X * stdscr->_size.Y;
-    CHAR_INFO *tmp_buffer = (CHAR_INFO *)malloc(tmp_buffer_length * sizeof(CHAR_INFO));
-    for (int i = 0; i < tmp_buffer_length; ++i) {
-        tmp_buffer[i].Attributes = stdscr->_bkgd_color;
-        tmp_buffer[i].Char.UnicodeChar = stdscr->_bkgd_color;
-    }
+	int tmp_buffer_length = stdscr->_size.X * stdscr->_size.Y;
+	CHAR_INFO *tmp_buffer = (CHAR_INFO *)malloc(tmp_buffer_length * sizeof(CHAR_INFO));
+	for (int i = 0; i < tmp_buffer_length; ++i) {
+		tmp_buffer[i].Attributes = stdscr->_bkgd_color;
+		tmp_buffer[i].Char.UnicodeChar = stdscr->_bkgd_color;
+	}
 	SMALL_RECT tmp_rect = {
 		0,
 		0,
 		stdscr->_size.X,
 		stdscr->_size.Y
 	};
-    if (!WriteConsoleOutputW(
-        console_buffer,
-        tmp_buffer,
+	if (!WriteConsoleOutputW(
+		console_buffer,
+		tmp_buffer,
 		stdscr->_size,
 		_coord_create(0, 0),
 		&tmp_rect))
 		return ERR;
 	Sleep(100);
-   if (!WriteConsoleOutputW(
-        console_buffer,
-        stdscr->_buffer,
+	if (!WriteConsoleOutputW(
+		console_buffer,
+		stdscr->_buffer,
 		stdscr->_size,
 		_coord_create(0, 0),
 		&tmp_rect))
@@ -302,13 +302,13 @@ flash				(void)
 }
 
 int
-hline				(chtype ch, int n)
+hline(chtype ch, int n)
 {
 	return whline(stdscr, ch, n);
 }
 
 int
-mvhline				(int y, int x, chtype ch, int n)
+mvhline(int y, int x, chtype ch, int n)
 {
 	if (move(y, x) == ERR)
 		return ERR;
@@ -316,7 +316,7 @@ mvhline				(int y, int x, chtype ch, int n)
 }
 
 int
-whline				(WINDOW *window, chtype ch, int n)
+whline(WINDOW *window, chtype ch, int n)
 {
 	COORD _tmp_cur_pos = window->_cur;
 	int _length = MIN(n, (window->_size.X) - (window->_cur.X));
@@ -330,7 +330,7 @@ whline				(WINDOW *window, chtype ch, int n)
 }
 
 int
-mvwhline			(WINDOW *window, int y, int x, chtype ch, int n)
+mvwhline(WINDOW *window, int y, int x, chtype ch, int n)
 {
 	if (wmove(window, y, x) == ERR)
 		return ERR;
@@ -338,13 +338,13 @@ mvwhline			(WINDOW *window, int y, int x, chtype ch, int n)
 }
 
 int
-vline				(chtype ch, int n)
+vline(chtype ch, int n)
 {
 	return wvline(stdscr, ch, n);
 }
 
 int
-mvvline				(int y, int x, chtype ch, int n)
+mvvline(int y, int x, chtype ch, int n)
 {
 	if (move(y, x) == ERR)
 		return ERR;
@@ -352,7 +352,7 @@ mvvline				(int y, int x, chtype ch, int n)
 }
 
 int
-wvline				(WINDOW *window, chtype ch, int n)
+wvline(WINDOW *window, chtype ch, int n)
 {
 	COORD _tmp_cur_pos = window->_cur;
 	for (int i = _tmp_cur_pos.Y; i < MIN(_tmp_cur_pos.Y + n, window->_size.Y); ++i)
@@ -367,23 +367,23 @@ wvline				(WINDOW *window, chtype ch, int n)
 }
 
 int
-mvwvline			(WINDOW *window, int y, int x, chtype ch, int n)
+mvwvline(WINDOW *window, int y, int x, chtype ch, int n)
 {
 	if (wmove(window, y, x) == ERR)
 		return ERR;
 	return wvline(window, ch, n);
 }
 
-int 
-beep				(void)
+int
+beep(void)
 {
 	/*
-	In Windows 7, 
-	Beep was rewritten to pass the beep to the default sound device for the session. 
-	This is normally the sound card, except when run under Terminal Services, 
+	In Windows 7,
+	Beep was rewritten to pass the beep to the default sound device for the session.
+	This is normally the sound card, except when run under Terminal Services,
 	in which case the beep is rendered on the client.
 	*/
-	if(!Beep(750, 300))
+	if (!Beep(750, 300))
 		return ERR;
 	return OK;
 }

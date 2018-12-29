@@ -11,6 +11,12 @@ move				(int y, int x)
 int
 wmove				(WINDOW *window, int y, int x)
 {
+	// Position should be checked, 
+	// some program (like sl) love to mvaddch to the position out of the windows size.
+	// we should disable this kind of mvaddch, or the ch will be add to next line,
+	// which conflicts with the document
+	if (y < 0 || x < 0 || y >= window->_size.Y || x >= window->_size.X)
+		return ERR;
 	window->_cur.Y = y;
 	window->_cur.X = x;
 

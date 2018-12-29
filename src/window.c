@@ -153,3 +153,46 @@ _wrefresh_raw		(WINDOW *window)
 
 	return OK;
 }
+
+int
+doupdate			(void)
+{
+	return _wrefresh_raw(stdscr);
+}
+
+int
+redrawwin			(WINDOW *window)
+{
+	if (!window)
+		return ERR;
+	_wrefresh_raw(window);
+	return OK;
+}
+
+int
+wredrawln			(WINDOW *window, int beg_line, int num_lines)
+{
+	if (!window)
+		return ERR;
+
+	if ( num_lines <= 0 || beg_line + num_lines >= window->_size.Y)
+		return ERR;
+
+	SMALL_RECT _reg = {
+        window->_pos.X,
+        window->_pos.Y + beg_line,
+		window->_pos.X + window->_size.X - 1,
+		window->_pos.Y + beg_line + num_lines
+	};
+
+	if (!WriteConsoleOutputW(
+        console_buffer,
+		window->_buffer,
+		_coord_create(window->_size.Y, window->_size.X),
+		_coord_create(0, 0),
+		&_reg))
+		return ERR;
+
+	return OK;
+}
+
