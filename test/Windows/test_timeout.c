@@ -3,7 +3,7 @@
 void test_timeout(void)
 {
 	initscr();
-	timeout(0);
+	timeout(100);
 	noecho();
 	for (;;) {
 		char input = getch();

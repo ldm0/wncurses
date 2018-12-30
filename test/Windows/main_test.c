@@ -50,7 +50,7 @@ int main()
 {
 	//tmp_test();
 
-	//test_timeout();
+	test_timeout();
 	//test_border();
 	//test_bkgd();
 	//test_delch();
@@ -58,8 +58,8 @@ int main()
 	//test_baudrate();
 	//test_ball();
 	//test_framerate();
-	test_move_boundary_check();
-	test_sl();
+	//test_move_boundary_check();
+	//test_sl();
 	//test_addstr();
 	//test_addnstr();
 	//test_ACS_VLINE();

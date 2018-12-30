@@ -56,6 +56,8 @@ wgetch(WINDOW *window)
 			}
 			if ((GetTickCount64() - time_begin) >= (ULONGLONG)window->_delay)
 				return ERR;
+			else
+				Sleep(1);	// Avoid high cpu consume rate
 		}
 	}
 
