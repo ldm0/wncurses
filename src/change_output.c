@@ -139,12 +139,12 @@ clrtoeol			(void)
 int
 wclrtoeol			(WINDOW *window)
 {
-    int _end_pos = (window->_cur.Y + 1)* window->_size.X;
-    int _start_pos = window->_cur.X + window->_cur.Y * window->_size.X;
-    for (int i = _start_pos; i < _end_pos; ++i) {
-        window->_buffer[i].Char.UnicodeChar = window->_bkgd_ch;
-        window->_buffer[i].Attributes= window->_bkgd_color;
-    }
+	int _end_pos = (window->_cur.Y + 1)* window->_size.X;
+	int _start_pos = window->_cur.X + window->_cur.Y * window->_size.X;
+	for (int i = _start_pos; i < _end_pos; ++i) {
+		window->_buffer[i].Char.UnicodeChar = window->_bkgd_ch;
+		window->_buffer[i].Attributes= window->_bkgd_color;
+	}
 
 	if (window->_immed)
 		if (_wrefresh_raw(window) == ERR)
