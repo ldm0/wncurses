@@ -17,9 +17,7 @@ initscr				(void)
 	stdscr = newwin(
 		console_info.srWindow.Bottom - console_info.srWindow.Top + 1,
 		console_info.srWindow.Right - console_info.srWindow.Left + 1,
-		console_info.srWindow.Top,
-		console_info.srWindow.Left
-	);
+		0, 0);
 
 	if (!stdscr)
 		AN_ERROR();
